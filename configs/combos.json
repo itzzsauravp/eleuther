@@ -1,0 +1,147 @@
+{
+  "combos": {
+    "mega-free": {
+      "name": "mega-free",
+      "description": "Maximum free tokens with auto-fallback",
+      "strategy": "priority",
+      "enabled": true,
+      "models": [
+        { "provider": "aihorde", "model": "any" },
+        { "provider": "opencode", "model": "auto" },
+        { "provider": "huggingchat", "model": "auto" },
+        { "provider": "ollama-cloud", "model": "auto" },
+        { "provider": "zcode", "model": "auto" },
+        { "provider": "gemini", "model": "auto" },
+        { "provider": "groq", "model": "auto" },
+        { "provider": "nvidia", "model": "auto" },
+        { "provider": "cerebras", "model": "auto" },
+        { "provider": "sambanova", "model": "auto" },
+        { "provider": "deepseek", "model": "auto" },
+        { "provider": "mistral", "model": "auto" },
+        { "provider": "cohere", "model": "auto" },
+        { "provider": "huggingface", "model": "auto" },
+        { "provider": "deepinfra", "model": "auto" },
+        { "provider": "fireworks", "model": "auto" },
+        { "provider": "nebius", "model": "auto" },
+        { "provider": "siliconflow", "model": "auto" },
+        { "provider": "hyperbolic", "model": "auto" },
+        { "provider": "featherless", "model": "auto" },
+        { "provider": "friendli", "model": "auto" },
+        { "provider": "nscale", "model": "auto" },
+        { "provider": "baseten", "model": "auto" },
+        { "provider": "bytez", "model": "auto" },
+        { "provider": "modelscope", "model": "auto" },
+        { "provider": "pollinations", "model": "auto" },
+        { "provider": "inference-net", "model": "auto" },
+        { "provider": "openrouter", "model": "auto" },
+        { "provider": "requesty", "model": "auto" },
+        { "provider": "anyapi", "model": "auto" },
+        { "provider": "freebuff", "model": "auto" },
+        { "provider": "freeinference", "model": "auto" },
+        { "provider": "free-ai", "model": "auto" },
+        { "provider": "freetheai", "model": "auto" },
+        { "provider": "dgrid", "model": "auto" },
+        { "provider": "tokenreply", "model": "auto" },
+        { "provider": "yolo-auto", "model": "auto" },
+        { "provider": "zenmux", "model": "auto" },
+        { "provider": "openadapter", "model": "auto" },
+        { "provider": "api-airforce", "model": "auto" },
+        { "provider": "bazaarlink", "model": "auto" },
+        { "provider": "dahl", "model": "auto" },
+        { "provider": "llm7", "model": "auto" },
+        { "provider": "novita", "model": "auto" },
+        { "provider": "bluesminds", "model": "auto" },
+        { "provider": "freemodel-dev", "model": "auto" },
+        { "provider": "freeaiapikey", "model": "auto" },
+        { "provider": "firecrawl", "model": "auto" },
+        { "provider": "searxng-search", "model": "auto" }
+      ]
+    },
+    "free-fallback": {
+      "name": "free-fallback",
+      "description": "Core free providers with fallback",
+      "strategy": "priority",
+      "enabled": true,
+      "models": [
+        { "provider": "aihorde", "model": "any" },
+        { "provider": "ollama-cloud", "model": "auto" },
+        { "provider": "opencode", "model": "auto" },
+        { "provider": "huggingchat", "model": "auto" },
+        { "provider": "gemini", "model": "auto" },
+        { "provider": "groq", "model": "auto" },
+        { "provider": "nvidia", "model": "auto" }
+      ]
+    },
+    "no-auth-only": {
+      "name": "no-auth-only",
+      "description": "Providers needing zero setup",
+      "strategy": "priority",
+      "enabled": true,
+      "models": [
+        { "provider": "aihorde", "model": "any" },
+        { "provider": "opencode", "model": "auto" },
+        { "provider": "huggingchat", "model": "auto" },
+        { "provider": "ollama-cloud", "model": "auto" },
+        { "provider": "zcode", "model": "auto" }
+      ]
+    },
+    "round-robin-free": {
+      "name": "round-robin-free",
+      "description": "Distribute load evenly across providers",
+      "strategy": "round-robin",
+      "enabled": true,
+      "models": [
+        { "provider": "aihorde", "model": "any" },
+        { "provider": "opencode", "model": "auto" },
+        { "provider": "huggingchat", "model": "auto" },
+        { "provider": "ollama-cloud", "model": "auto" },
+        { "provider": "zcode", "model": "auto" }
+      ]
+    },
+    "coding-focused": {
+      "name": "coding-focused",
+      "description": "Best providers for code generation",
+      "strategy": "priority",
+      "enabled": true,
+      "models": [
+        { "provider": "deepseek", "model": "deepseek-coder" },
+        { "provider": "mistral", "model": "codestral-latest" },
+        { "provider": "groq", "model": "llama-3.3-70b-versatile" },
+        { "provider": "nvidia", "model": "llama-3.1-70b-instruct" },
+        { "provider": "cerebras", "model": "llama3.1-70b" },
+        { "provider": "sambanova", "model": "llama-3.1-70b" },
+        { "provider": "gemini", "model": "gemini-2.0-flash" },
+        { "provider": "aihorde", "model": "any" }
+      ]
+    },
+    "fast-inference": {
+      "name": "fast-inference",
+      "description": "Providers with fastest response times",
+      "strategy": "priority",
+      "enabled": true,
+      "models": [
+        { "provider": "cerebras", "model": "llama3.1-8b" },
+        { "provider": "groq", "model": "llama-3.1-8b-instant" },
+        { "provider": "sambanova", "model": "llama-3.1-8b" },
+        { "provider": "nvidia", "model": "llama-3.1-8b-instruct" },
+        { "provider": "deepinfra", "model": "meta-llama/Meta-Llama-3.1-8B-Instruct" },
+        { "provider": "aihorde", "model": "any" }
+      ]
+    },
+    "heavy-reasoning": {
+      "name": "heavy-reasoning",
+      "description": "Best models for complex reasoning tasks",
+      "strategy": "priority",
+      "enabled": true,
+      "models": [
+        { "provider": "deepseek", "model": "deepseek-reasoner" },
+        { "provider": "nvidia", "model": "llama-3.1-405b-instruct" },
+        { "provider": "nvidia", "model": "nemotron-4-340b-instruct" },
+        { "provider": "gemini", "model": "gemini-1.5-pro" },
+        { "provider": "mistral", "model": "mistral-large-latest" },
+        { "provider": "cohere", "model": "command-r-plus" },
+        { "provider": "aihorde", "model": "any" }
+      ]
+    }
+  }
+}
