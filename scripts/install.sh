@@ -10,8 +10,8 @@
 #   5. Registers no-auth providers
 #   6. Registers API key providers (if api-keys.env has keys)
 #   7. Builds all routing combos
-#   8. Activates mega-free
-#   9. Adds shell aliases for noise-free monitoring
+#   8. Activates combo/execution
+#   9. Writes Claude Code env config to shell RC (~/.zshrc or ~/.bashrc)
 #
 # Run: ./scripts/install.sh
 
@@ -61,7 +61,7 @@ _print_header "Step 3/9 — Create ~/.omniroute directory"
 mkdir -p "$HOME/.omniroute"
 print_success "$HOME/.omniroute exists"
 
-# Generate .env with encryption key (this fixes the "STORAGE_ENCRYPTION_KEY ignored" warning)
+# Generate .env with encryption key
 if [ ! -f "$HOME/.omniroute/.env" ] || ! grep -q "STORAGE_ENCRYPTION_KEY=" "$HOME/.omniroute/.env" 2>/dev/null; then
     print_info "Generating ~/.omniroute/.env with STORAGE_ENCRYPTION_KEY..."
     KEY=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
@@ -86,7 +86,7 @@ else
         print_success "Created api-keys.env from template"
         print_warning "Edit with your keys: nano ~/.omniroute/api-keys.env"
     else
-        print_warning "Template not found — you'll need to create ~/.omniroute/api-keys.env manually"
+        print_warning "Template not found — create ~/.omniroute/api-keys.env manually"
     fi
 fi
 
@@ -110,58 +110,42 @@ fi
 _print_header "Step 7/9 — Build routing combos"
 bash "$(dirname "$0")/combo.sh"
 
-_print_header "Step 8/9 — Activate mega-free"
-omniroute combo switch mega-free >/dev/null 2>&1
-print_success "mega-free is active"
+_print_header "Step 8/9 — Activate combo/execution"
+omniroute combo switch combo/execution >/dev/null 2>&1
+print_success "combo/execution is active"
 
-_print_header "Step 9/9 — Shell aliases (noise-filtered OmniRoute commands)"
-ALIASES=$(cat <<'EOF'
+_print_header "Step 9/9 — Claude Code env + shell aliases"
+ENV_BLOCK=$(cat <<'EOF'
+
+# ── OmniRoute + Claude Code ────────────────────────────────────
+export ANTHROPIC_BASE_URL="http://localhost:20128/v1"
+export ANTHROPIC_API_KEY="omni-route-key"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="auto/coding"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="auto/coding"
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
 
 # ── OmniRoute noise-filtered aliases ───────────────────────────
+alias omni-stats="omniroute usage analytics"
 alias or-combos="omniroute combo list 2>&1 | tail -n +5"
-alias or-usage="omniroute usage analytics 2>&1 | tail -n +5"
-alias or-util="omniroute usage utilization 2>&1 | tail -n +5"
-alias or-logs="omniroute usage logs 2>&1 | tail -n +5"
 alias or-quota="omniroute quota 2>&1 | tail -n +5"
-alias or-telemetry="omniroute telemetry 2>&1 | tail -n +5"
-alias or-cost="omniroute cost 2>&1 | tail -n +5"
 alias or-status="omniroute providers status 2>&1 | tail -n +5"
-alias or-metrics="omniroute providers metrics 2>&1 | tail -n +5"
 alias or-serve="omniroute serve"
 EOF
 )
-if grep -q "or-combos" "$SHELL_RC" 2>/dev/null; then
-    print_success "Aliases already in $SHELL_RC"
+if grep -q "ANTHROPIC_BASE_URL" "$SHELL_RC" 2>/dev/null; then
+    print_success "Claude Code env already in $SHELL_RC"
 else
-    echo "$ALIASES" >> "$SHELL_RC"
-    print_success "Aliases added to $SHELL_RC"
+    echo "$ENV_BLOCK" >> "$SHELL_RC"
+    print_success "Claude Code env + aliases added to $SHELL_RC"
 fi
 
 _print_header "🎉 DONE — What to do next"
 cat <<EOF
-1.  Add your API keys:
-      ${CYAN}nano ~/.omniroute/api-keys.env${NC}
-    Then re-run:
-      ${CYAN}./scripts/add-keys.sh${NC}
+1.  ${CYAN}nano ~/.omniroute/api-keys.env${NC}   (add your keys)
+2.  ${CYAN}./scripts/add-keys.sh${NC}            (re-register after editing)
+3.  ${CYAN}omniroute serve &${NC}                (start server — keep running)
+4.  ${CYAN}source $SHELL_RC${NC}     (load new env vars)
+5.  Launch Claude Code — routes through free providers automatically.
 
-2.  Start the OmniRoute server (REQUIRED before Claude Code):
-      ${CYAN}omniroute serve &${NC}
-    (or run it in a dedicated terminal)
-
-3.  Configure your coding tool to use OmniRoute:
-      ${CYAN}export ANTHROPIC_BASE_URL=http://localhost:4000${NC}
-      ${CYAN}export ANTHROPIC_API_KEY=omniroute${NC}
-    Add these to ${SHELL_RC} to persist:
-      ${CYAN}echo 'export ANTHROPIC_BASE_URL=http://localhost:4000' >> $SHELL_RC${NC}
-      ${CYAN}echo 'export ANTHROPIC_API_KEY=omniroute' >> $SHELL_RC${NC}
-      ${CYAN}source $SHELL_RC${NC}
-
-4.  Verify:
-      ${CYAN}omniroute providers list${NC}    # all keys registered
-      ${CYAN}omniroute combo switch mega-free${NC}
-      ${CYAN}or-combos${NC}                   # noise-free list
-
-5.  Use Claude Code / Cursor / Codex — it now routes through free providers.
-
-    Estimated monthly budget with full setup: 1.5B+ tokens.
+Estimated monthly budget with full setup: 1.5B+ tokens.
 EOF
