@@ -172,6 +172,25 @@ With all free providers configured:
 2. Add new free providers or improve combos
 3. Submit a PR with updates to `docs/API_KEYS_GUIDE.md`
 
+## 💻 Shell Aliases (Noise-Filtered)
+
+OmniRoute outputs startup logs (env loading, warnings, deprecation notices) that can clutter your terminal when using shortcuts. Add these to your `~/.bashrc` (or `~/.zshrc` on macOS) for clean, filtered output:
+
+```bash
+# OmniRoute Monitoring & Telemetry (Noise-Filtered)
+alias or-combos="omniroute combo list 2>&1 | tail -n +5"
+alias or-usage="omniroute usage analytics 2>&1 | tail -n +5"
+alias or-util="omniroute usage utilization 2>&1 | tail -n +5"
+alias or-logs="omniroute usage logs 2>&1 | tail -n +5"
+alias or-quota="omniroute quota 2>&1 | tail -n +5"
+alias or-telemetry="omniroute telemetry 2>&1 | tail -n +5"
+alias or-cost="omniroute cost 2>&1 | tail -n +5"
+alias or-status="omniroute providers status 2>&1 | tail -n +5"
+alias or-metrics="omniroute providers metrics 2>&1 | tail -n +5"
+```
+
+> **How it works:** OmniRoute always outputs 4 lines of startup logs to stdout. The `2>&1 | tail -n +5` suffix suppresses these lines, showing only the actual data you requested.
+
 ## 📝 License
 
 MIT — Use this freely. Share the free tokens love.
