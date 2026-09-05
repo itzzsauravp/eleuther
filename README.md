@@ -1,277 +1,238 @@
-# 🚀 OmniRoute Free Token Maximizer
+# ⚡ Eleuther
 
-> **Get 1.5+ billion free AI tokens/month** — One-click install, zero cost, works on Windows / macOS / Linux.
+> **Universal Role & Terminal Agent Onboarding Engine**  
+> Unlock **1.5+ billion free AI tokens/month**, role-tailored engineering personas, and universal **Caveman token optimization** across **Claude Code, OpenAI Codex, OpenCode, and Aider**.  
+> Cross-platform: **macOS**, **Linux**, and **Windows (WSL / Git Bash)**.
 
 ---
 
-## ⚡ TL;DR — One-Command Setup
+## 🎖️ Acknowledgments & Project Origins
+
+- **Core Routing Engine**: Eleuther is powered by the foundational **[OmniRoute](https://github.com/dreadnode/omniroute)** model orchestration engine. A huge shoutout to the OmniRoute team and contributors for creating an extraordinary local proxy for multi-provider AI model traffic.
+- **Creator & Framework Architecture**: **Eleuther**—including its automated zero-risk safety backups, role-aware skill synthesizers, universal Caveman token optimizer protocol, terminal agent adapters (Claude Code, Codex, OpenCode, Aider), and cross-platform installation framework—was conceived and created by **[Saurav Parajulee](https://github.com/itzzsauravp)**.
+
+---
+
+## ⚡ Quick Start — The Only Script You Need
+
+All you need to do is clone this repository and run the unified installer:
 
 ```bash
-# Linux / macOS / WSL / Git Bash
-git clone https://github.com/itzzsauravp/omniroute-config.git
-cd omniroute-config
+git clone https://github.com/itzzsauravp/omniroute-config.git eleuther
+cd eleuther
 ./scripts/install.sh
 ```
 
-That's it. The installer:
+**That's literally it.** The installer handles the rest automatically:
+1. 🛡️ **Safety Backup**: Creates an isolated snapshot in `~/.omniroute-backups/latest/`.
+2. 🎭 **Interactive Persona Selection**: Choose from 6 roles (Backend, Frontend, DevOps, Architect, QA, Designer).
+3. 💻 **Terminal Agent Adapter**: Configures your choice of CLI agent (**Claude Code**, **Codex**, **OpenCode**, or **Aider**).
+4. ⚡ **Universal Caveman Optimizer**: Injects high-density instructions to strip pleasantries, greetings, and filler words.
+5. 🔑 **Automated Provider Registration**: Activates 7 zero-key free providers plus any keys in your `~/.omniroute/api-keys.env`.
+6. 🔀 **Intelligent Routing Combos**: Compiles and validates smart failover tiers (`combo/execution`, `combo/architecture`, etc.).
+7. 🐚 **Clean Shell Exports**: Injects environment variables and helpful aliases within clean, reversible managed blocks.
 
-- ✅ Installs Node.js + OmniRoute
-- ✅ Creates `~/.omniroute/` + encryption key (fixes `.env` warnings)
-- ✅ Registers 7 no-auth providers (work instantly, zero keys)
-- ✅ Reads your `~/.omniroute/api-keys.env` and registers every key found
-- ✅ Builds 3 optimized routing combos (`combo/execution`, `combo/architecture`, `combo/low-cost-batch`)
-- ✅ Activates `combo/execution` (priority: fast+smart → unlimited)
-- ✅ Configures Claude Code environment variables in shell RC (`~/.zshrc` / `~/.bashrc`)
-- ✅ Adds noise-filtered shell aliases (`or-combos`, `or-status`, `omni-stats`, etc.)
+---
 
-### 🔄 Updating with Existing Configuration Safely
+## 🛡️ Zero-Risk Safety & 1-Click Rollback
 
-If you already have OmniRoute configured and want to apply these optimized combos without losing your setup, run:
+Before touching any configurations or shell profiles, Eleuther automatically snapshots your existing environment into `~/.omniroute-backups/latest/`.
+
+If you ever wish to completely undo all changes:
 
 ```bash
-./scripts/backup-and-apply.sh
+./scripts/revert.sh
 ```
 
-This will automatically backup your current configuration folder `~/.omniroute` to `~/.omniroute.bak` (plus a timestamped version), preserve all your custom settings and API keys, and then configure the new routing combos.
+- Restores original `~/.omniroute`, `~/.claude`, `~/.config/opencode`, and workspace files (`AGENTS.md`, `CONVENTIONS.md`, `.aider.conf.yml`).
+- Cleanly removes the `# <<< Eleuther Managed Block <<<` section from `~/.zshrc`, `~/.bashrc`, and `~/.bash_profile`.
+- Zero orphan files left behind.
 
 ---
 
-## 🎯 What You Get (3 Goals, Locked In)
+## 📜 Script Directory Guide — Keep It Simple
 
-| Goal                 | How It's Achieved                                                                                                                 |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Token Efficiency** | Limited quotas burned FIRST (Gemini 1,500/day → Groq 30/min → NVIDIA 1,000/mo), unlimited providers (AI Horde, OpenCode) are LAST |
-| **Speed**            | Groq, Cerebras, SambaNova, Cloudflare ranked first — sub-second latency                                                           |
-| **Accuracy**         | Strongest model at each tier: Nemotron 340B, DeepSeek R1, Gemini 2.0 Flash, Qwen 2.5 Coder                                        |
+You don't need to juggle multiple scripts. Here is the concise catalog:
 
-**The routing logic is deterministic:**
-
-```
-Request → Tier 1 (Fast Speed: Groq/Cerebras)
-       → Tier 2 (Deep Code Logic: DeepSeek/Gemini/Mistral)
-       → Tier 3 (High Allocation: SiliconFlow)
-       → Tier 4 (Unlimited safety floor: OpenRouter/AI Horde)
-```
+| Script | When to Use | Purpose |
+| :--- | :--- | :--- |
+| **`scripts/install.sh`** | 🌟 **Always Start Here** | **The unified installer.** Pre-install backup, role & terminal agent setup, provider registration, combo generation, and shell export. |
+| **`scripts/revert.sh`** | When you want to rollback | **1-Click Undo.** Safely restores original files and cleans your shell profile. |
+| **`scripts/add-keys.sh`** | After updating keys | Fast-syncs newly added keys from `~/.omniroute/api-keys.env` without a full re-install. |
+| `scripts/backup.sh` | Internal | Automatically invoked by `install.sh` to snapshot configs before any changes. |
+| `scripts/setup-skills.sh` | Internal | Compiles Caveman rules + role skills and injects them into the chosen terminal agent adapter. |
+| `scripts/build-combos.sh` | Internal | Compiles and validates multi-tier intelligent routing combos. |
 
 ---
 
-## 📦 What's in the Box
+## 🎭 Role Personas & Terminal Agent Matrix
 
-| Script                         | Purpose                                                     |
-| ------------------------------ | ----------------------------------------------------------- |
-| `scripts/install.sh`           | **ONE-CLICK** — does everything automatically               |
-| `scripts/add-keys.sh`          | Re-registers API keys from `~/.omniroute/api-keys.env`      |
-| `scripts/build-combos.sh`      | Builds and validates all routing combos with simulation test |
-| `scripts/backup-and-apply.sh`  | Backs up existing `~/.omniroute` and applies updated settings|
-| `configs/api-keys.env.example` | Template — ✅ marks = keys author uses                      |
-| `configs/combos.json`          | Combo configuration definitions                             |
-| `configs/providers.json`       | Provider metadata and catalog definitions                   |
+### 1. Terminal-Focused Coding Agents (`adapters/`)
+Eleuther focuses on high-performance terminal CLI agents:
+- **Claude Code**: Injects `.claude/commands/optimize.md` & `role-skills.md`, maps Sonnet/Opus models to free coding combos.
+- **OpenAI Codex / CLI**: Generates workspace `AGENTS.md` and `.codex/instructions.md` with `OPENAI_BASE_URL` routing.
+- **OpenCode CLI**: Injects rules into `.opencode/rules/omniroute-rules.md`.
+- **Aider CLI**: Scaffolds `CONVENTIONS.md` and generates `.aider.conf.yml` pointing to the local proxy.
+
+### 2. Universal Caveman Protocol (`skills/core/caveman.md`)
+Applied across all roles and agents:
+- Eliminates conversational fluff, pleasantries, and redundant sign-offs.
+- Enforces direct diffs, executable one-liners, and dense bulleted technical notes.
+- Maximizes token mileage on every provider tier.
+
+### 3. Tailored Role Skills (`skills/roles/`)
+- **DevOps**: Hardened Kubernetes manifests, Docker multi-stage builds, GitHub Actions pipelines, IaC safety guardrails.
+- **Backend Dev**: Non-blocking DB migrations, OpenAPI 3.1 REST specs, SQL query indexing (`EXPLAIN ANALYZE`).
+- **Frontend Dev**: Component architecture, Playwright E2E suites, DOM / Web Vitals optimization.
+- **Designer**: Systematic design tokens (Tailwind / CSS), responsive Flex/Grid primitives, WCAG a11y contrast checks.
+- **System Architect**: Domain-Driven Design (DDD) service boundaries, STRIDE threat modeling, multi-tier caching architectures.
+- **QA**: Boundary value tests, automated fuzzing scenarios, regression and smoke test suites.
 
 ---
 
-## 🪟 Platform-Specific Guide
+## 🔑 API Keys — Free Tokens Setup
 
-### macOS (Terminal / iTerm2 / Warp)
+All you need is your `~/.omniroute/api-keys.env` file. If it doesn't exist yet, `install.sh` automatically creates it from the template.
 
+1. Edit your keys file:
+   ```bash
+   nano ~/.omniroute/api-keys.env
+   # Or on Windows: notepad.exe "$HOME/.omniroute/api-keys.env"
+   ```
+2. Fill in the keys you have (leave missing ones blank — Eleuther automatically skips empty keys):
+   - `GEMINI_API_KEY` (1,500 free requests/day)
+   - `GROQ_API_KEY` (30 requests/min ultra-fast Llama 3.3)
+   - `NVIDIA_API_KEY` (1,000 free requests/month Nemotron 340B)
+   - `CEREBRAS_API_KEY` (Ultra-fast 70B inference)
+   - `SAMBANOVA_API_KEY` (High-speed open models)
+   - `DEEPSEEK_API_KEY` (Coding reasoning)
+   - `OPENROUTER_API_KEY` (50+ free models)
+3. Re-sync your keys at any time:
+   ```bash
+   ./scripts/add-keys.sh
+   ```
+
+---
+
+## 💻 OS-Specific Quick Starts
+
+### macOS
 ```bash
-# 1. Homebrew (recommended)
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# 1. Install Node.js & git if missing
 brew install node git
 
-# 2. Clone + install
-git clone https://github.com/itzzsauravp/omniroute-config.git
-cd omniroute-config
+# 2. Clone & install
+git clone https://github.com/itzzsauravp/omniroute-config.git eleuther
+cd eleuther
 ./scripts/install.sh
 
-# 3. Add keys
-nano ~/.omniroute/api-keys.env
-./scripts/add-keys.sh
-
-# 4. Start server + load shell configuration (install.sh auto-configures ~/.zshrc)
+# 3. Start proxy & reload shell
 omniroute serve &
 source ~/.zshrc
-```
 
-**Tip:** For `or-*` aliases and Claude Code env variables to work immediately, `source ~/.zshrc` or open a new terminal window.
-
----
-
-### Linux (Ubuntu / Debian / Fedora / Arch)
-
-```bash
-## I recommend using something like mise or nvm to install node
-
-# Ubuntu/Debian
-sudo apt update && sudo apt install -y nodejs npm git
-
-# Fedora
-sudo dnf install -y nodejs npm git
-
-# Arch
-sudo pacman -S nodejs npm git
-
-# Then clone & install:
-git clone https://github.com/itzzsauravp/omniroute-config.git
-cd omniroute-config
-./scripts/install.sh
-nano ~/.omniroute/api-keys.env
-./scripts/add-keys.sh
-omniroute serve &
-source ~/.bashrc
-```
-
-**Tip:** If `node` command is missing on Debian, ensure `nodejs` is symlinked or installed via NodeSource.
-
----
-
-### Windows (PowerShell / Git Bash / WSL2)
-
-#### Option A: WSL2 (RECOMMENDED — full Linux compatibility)
-
-```powershell
-# In PowerShell as Administrator
-wsl --install
-# Restart, then open "Ubuntu" from Start Menu
-# Inside Ubuntu, run the Linux commands above
-```
-
-#### Option B: Git Bash (lightweight, native Windows)
-
-```bash
-# 1. Install Node.js: https://nodejs.org/ (LTS, 64-bit)
-# 2. Install Git: https://git-scm.com/ (includes Git Bash)
-
-# 3. Open Git Bash, run:
-git clone https://github.com/itzzsauravp/omniroute-config.git
-cd omniroute-config
-./scripts/install.sh
-
-# 4. Edit keys (use VS Code or Notepad)
-code ~/.omniroute/api-keys.env
-# or: notepad.exe "$HOME/.omniroute/api-keys.env"
-
-# 5. Re-register keys
-./scripts/add-keys.sh
-
-# 6. Start server (keep this terminal open)
-omniroute serve &
-
-# 7. Reload shell in a new Git Bash terminal:
-source ~/.bashrc
-```
-
----
-
-## 🔑 API Keys — What to Fill In
-
-The template at `configs/api-keys.env.example` has **✅ marks** for keys the author actively uses.
-
-| Key                  | Why                               | Get It                                          |
-| -------------------- | --------------------------------- | ----------------------------------------------- |
-| `GEMINI_API_KEY`     | 1,500/day Flash 2.0               | [AI Studio](https://aistudio.google.com/apikey) |
-| `GROQ_API_KEY`       | 30/min Llama 3.3 70B              | [Groq Console](https://console.groq.com)        |
-| `NVIDIA_API_KEY`     | 1,000/mo Nemotron 340B            | [NVIDIA Build](https://build.nvidia.com)        |
-| `CEREBRAS_API_KEY`   | Fastest 70B                       | [Cerebras](https://cloud.cerebras.ai)           |
-| `SAMBANOVA_API_KEY`  | Fast 70B                          | [SambaNova](https://cloud.sambanova.ai)         |
-| `DEEPSEEK_API_KEY`   | Best free coder                   | [DeepSeek](https://platform.deepseek.com)       |
-| `MISTRAL_API_KEY`    | Codestral + Large                 | [Mistral](https://console.mistral.ai)           |
-| `OPENROUTER_API_KEY` | **50+ free models in one key** ⭐ | [OpenRouter](https://openrouter.ai)             |
-
-> **No key = skipped automatically.** Only fill what you have.
-
----
-
-## 🚀 Daily Workflow
-
-```bash
-# 1. Start server (do this once per session)
-omniroute serve &
-
-# 2. Use aliases (added to your shell by install.sh)
-omni-stats     # token/provider health
-or-quota       # quota usage
-or-combos      # list configured combos
-or-status      # provider connection status
-
-# 3. Switch combos as needed
-omniroute combo switch combo/execution         # default: max tokens + quality
-omniroute combo switch combo/architecture      # architecture, debugging
-omniroute combo switch combo/low-cost-batch    # quick edits
-
-# 4. Test routing
-omniroute simulate "Write a REST API in Go" --combo combo/execution --explain
-```
-
----
-
-## 🔧 Coding Tool Setup
-
-### Claude Code
-
-Add the following environment variables to your `~/.zshrc` or `~/.bashrc` (note: `install.sh` adds these automatically):
-
-```bash
-# ── OmniRoute + Claude Code ────────────────────────────────────
-export ANTHROPIC_BASE_URL="http://localhost:20128/v1"
-export ANTHROPIC_API_KEY="omni-route-key"
-export ANTHROPIC_DEFAULT_SONNET_MODEL="auto/coding"
-export ANTHROPIC_DEFAULT_OPUS_MODEL="auto/coding"
-export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
-```
-
-#### What each variable does:
-- `ANTHROPIC_BASE_URL="http://localhost:20128/v1"`: Directs Claude Code traffic to OmniRoute's local endpoint on port 20128.
-- `ANTHROPIC_API_KEY="omni-route-key"`: Acts as the local bearer token (OmniRoute intercepts and injects provider-specific keys upstream).
-- `ANTHROPIC_DEFAULT_SONNET_MODEL="auto/coding"`: Maps Claude Sonnet calls directly to OmniRoute's active coding combo.
-- `ANTHROPIC_DEFAULT_OPUS_MODEL="auto/coding"`: Maps Claude Opus calls directly to OmniRoute's active coding combo.
-- `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"`: Disables non-essential telemetry calls to maximize token efficiency.
-
-After editing or running `./scripts/install.sh`, reload your shell:
-
-```bash
-source ~/.zshrc    # or source ~/.bashrc
-```
-
-Then simply launch Claude Code:
-
-```bash
+# 4. Launch your agent (e.g. Claude Code or Aider)
 claude
 ```
 
-Claude Code will automatically route through your active OmniRoute combo.
+### Linux (Ubuntu / Debian / Fedora / Arch)
+```bash
+# 1. Install Node.js & git if missing (Debian/Ubuntu)
+sudo apt update && sudo apt install -y nodejs npm git
+
+# 2. Clone & install
+git clone https://github.com/itzzsauravp/omniroute-config.git eleuther
+cd eleuther
+./scripts/install.sh
+
+# 3. Start proxy & reload shell
+omniroute serve &
+source ~/.bashrc
+
+# 4. Launch your agent
+claude
+```
+
+### Windows (WSL2 or Git Bash)
+- **WSL2 (Recommended)**: Open Ubuntu in WSL2 and follow the Linux instructions above.
+- **Native Git Bash**:
+  1. Install [Node.js](https://nodejs.org/) and [Git for Windows](https://git-scm.com/) (includes Git Bash).
+  2. Open Git Bash and run:
+     ```bash
+     git clone https://github.com/itzzsauravp/omniroute-config.git eleuther
+     cd eleuther
+     ./scripts/install.sh
+     ```
+  3. Start proxy: `omniroute serve &`
+  4. Reload shell: `source ~/.bashrc`
 
 ---
 
-## 📁 Project Structure
+## 🚀 Daily Workflow & Shell Aliases
 
+```bash
+# 1. Start the proxy server (run once per boot/session)
+omniroute serve &
+
+# 2. Handy management aliases added by installer
+omni-stats     # View token usage and provider health
+or-combos      # List configured routing combos
+or-status      # View provider connection health
+or-quota       # Check active rate limits and quotas
+
+# 3. Switch combos on the fly
+omniroute combo switch combo/execution         # Default: Balanced coding & speed
+omniroute combo switch combo/architecture      # Deep reasoning & architectural design
+omniroute combo switch combo/low-cost-batch    # Ultra-light quick edits
+
+# 4. Launch your favorite terminal coding agent
+claude         # Claude Code
+codex          # OpenAI Codex / CLI
+opencode       # OpenCode CLI
+aider          # Aider CLI
 ```
-omniroute-config/
-├── README.md                    # Documentation & setup guide
-├── LICENSE                      # MIT — Saurav Parajulee
-├── .gitignore                   # Protects api-keys.env
+
+---
+
+## 📁 Repository Structure
+
+```text
+eleuther/
+├── README.md                      # Complete documentation, credits & onboarding guide
+├── LICENSE                        # MIT License
 ├── configs/
-│   ├── api-keys.env.example     # Template (✅ = author's active keys)
-│   ├── combos.json              # Combo definitions
-│   └── providers.json           # Provider metadata
-├── docs/
-│   ├── API_KEYS_GUIDE.md        # Detailed guide to acquiring API keys
-│   ├── COMBO_CUSTOMIZATION.md   # Combo architecture & routing strategies
-│   └── TROUBLESHOOTING.md       # Troubleshooting & error resolution
-└── scripts/
-    ├── install.sh               # 🎯 ONE-CLICK installer
-    ├── add-keys.sh              # Register API keys from ~/.omniroute/api-keys.env
-    ├── build-combos.sh          # Builds and validates all routing combos
-    └── backup-and-apply.sh      # Backs up existing ~/.omniroute and applies settings
+│   ├── api-keys.env.example       # API key template with recommended providers
+│   ├── combos.json                # Combo definitions (execution, architecture, etc.)
+│   └── providers.json             # Provider catalog metadata
+├── scripts/
+│   ├── install.sh                 # 🌟 One-click multi-agent onboarding installer
+│   ├── revert.sh                  # 🛡️ 1-click rollback / revert script
+│   ├── backup.sh                  # Pre-install automated backup engine
+│   ├── setup-skills.sh            # Persona skill synthesizer & compiler
+│   ├── add-keys.sh                # Provider API key registration tool
+│   ├── build-combos.sh            # Routing combo generator & validator
+│   └── backup-and-apply.sh        # Settings re-application helper
+├── adapters/
+│   ├── claude-code.sh             # Claude Code command & routing adapter
+│   ├── codex.sh                   # Codex & CLI AGENTS.md adapter
+│   ├── opencode.sh                # OpenCode rules adapter
+│   └── aider.sh                   # Aider CONVENTIONS.md & config adapter
+└── skills/
+    ├── core/
+    │   ├── caveman.md             # Universal token optimizer protocol
+    │   ├── git-commits.md         # Conventional commit & diff standard
+    │   └── security-linter.md     # Secret detection & secure coding standard
+    └── roles/
+        ├── devops.md              # Docker, K8s, CI/CD, IaC skills
+        ├── backend.md             # DB migrations, OpenAPI, SQL indexing
+        ├── frontend.md            # Component architecture, E2E, DOM profiling
+        ├── designer.md            # Design tokens, CSS layout, a11y contrast
+        ├── architect.md           # Microservices, threat modeling, caching
+        └── qa.md                  # Boundary tests, fuzzing, regression suites
 ```
 
 ---
 
 ## 📝 License
 
-MIT — Copyright (c) 2026 **Saurav Parajulee**
-
-## ❤️ Made with Love
-
-**By Saurav Parajulee** — for the AI coding community.
-
-> _The best tokens are the free ones._
+MIT — Copyright (c) 2026 **Saurav Parajulee**.  
+Powered by **OmniRoute**. _The best tokens are the free ones._
