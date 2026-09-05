@@ -87,7 +87,7 @@ else
 fi
 
 print_header "Step 4/4 — Rebuilding and switching routing combos"
-bash "$(dirname "$0")/build-combos.sh --switch"
+bash "$(dirname "$0")/build-combos.sh" --switch
 
 print_header "🎉 Backup and Apply Complete!"
 echo "Your previous settings were safely backed up to:"
