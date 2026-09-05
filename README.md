@@ -24,6 +24,16 @@ That's it. The installer:
 - ✅ Configures Claude Code environment variables in shell RC (`~/.zshrc` / `~/.bashrc`)
 - ✅ Adds noise-filtered shell aliases (`or-combos`, `or-status`, `omni-stats`, etc.)
 
+### 🔄 Updating with Existing Configuration Safely
+
+If you already have OmniRoute configured and want to apply these optimized combos without losing your setup, run:
+
+```bash
+./scripts/backup-and-apply.sh
+```
+
+This will automatically backup your current configuration folder `~/.omniroute` to `~/.omniroute.bak` (plus a timestamped version), preserve all your custom settings and API keys, and then configure the new routing combos.
+
 ---
 
 ## 🎯 What You Get (3 Goals, Locked In)
@@ -52,6 +62,7 @@ Request → Tier 1 (Fast Speed: Groq/Cerebras)
 | `scripts/install.sh`           | **ONE-CLICK** — does everything automatically               |
 | `scripts/add-keys.sh`          | Re-registers API keys from `~/.omniroute/api-keys.env`      |
 | `scripts/build-combos.sh`      | Builds and validates all routing combos with simulation test |
+| `scripts/backup-and-apply.sh`  | Backs up existing `~/.omniroute` and applies updated settings|
 | `configs/api-keys.env.example` | Template — ✅ marks = keys author uses                      |
 | `configs/combos.json`          | Combo configuration definitions                             |
 | `configs/providers.json`       | Provider metadata and catalog definitions                   |
@@ -249,7 +260,8 @@ omniroute-config/
 └── scripts/
     ├── install.sh               # 🎯 ONE-CLICK installer
     ├── add-keys.sh              # Register API keys from ~/.omniroute/api-keys.env
-    └── build-combos.sh          # Builds and validates all routing combos
+    ├── build-combos.sh          # Builds and validates all routing combos
+    └── backup-and-apply.sh      # Backs up existing ~/.omniroute and applies settings
 ```
 
 ---

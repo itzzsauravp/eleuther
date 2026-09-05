@@ -11,6 +11,7 @@ api-keys.env
 
 # OmniRoute local config
 .omniroute/
+todo.txt
 
 # Dependencies
 node_modules/
