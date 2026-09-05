@@ -108,9 +108,9 @@ else
 fi
 
 _print_header "Step 7/9 — Build routing combos"
-bash "$(dirname "$0")/combo.sh"
+bash "$(dirname "$0")/build-combos.sh --switch"
 
-_print_header "Step 8/9 — Activate combo/execution"
+_print_header "Step 8/9 — Verify active combo"
 omniroute combo switch combo/execution >/dev/null 2>&1
 print_success "combo/execution is active"
 

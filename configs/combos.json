@@ -1,70 +1,42 @@
 {
   "combos": {
-    "mega-free": {
-      "name": "mega-free",
-      "description": "Maximum tokens for agentic coding — limited quotas first, unlimited safety net last",
+    "combo/execution": {
+      "name": "combo/execution",
+      "description": "Primary coding & agentic execution combo — sub-second LPUs down to high-reasoning coding models and free safety floor",
       "strategy": "priority",
       "enabled": true,
       "models": [
-        { "provider": "gemini", "model": "gemini-2.0-flash" },
         { "provider": "groq", "model": "llama-3.3-70b-versatile" },
-        { "provider": "nvidia", "model": "nemotron-4-340b-instruct" },
         { "provider": "cerebras", "model": "llama3.1-70b" },
         { "provider": "sambanova", "model": "llama-3.1-70b" },
         { "provider": "deepseek", "model": "deepseek-chat" },
-        { "provider": "mistral", "model": "mistral-large-latest" },
-        { "provider": "cohere", "model": "command-r-plus" },
-        { "provider": "openrouter", "model": "meta-llama/llama-3.1-70b-instruct:free" },
-        { "provider": "openrouter", "model": "qwen/qwen-2.5-72b-instruct:free" },
-        { "provider": "deepinfra", "model": "meta-llama/Meta-Llama-3.1-70B-Instruct" },
-        { "provider": "fireworks", "model": "accounts/fireworks/models/llama-v3p1-70b-instruct" },
-        { "provider": "nebius", "model": "meta-llama/Meta-Llama-3.1-70B-Instruct" },
-        { "provider": "siliconflow", "model": "meta-llama/Meta-Llama-3.1-70B-Instruct" },
-        { "provider": "hyperbolic", "model": "meta-llama/Meta-Llama-3.1-70B-Instruct" },
-        { "provider": "aihorde", "model": "any" },
-        { "provider": "opencode", "model": "auto" },
-        { "provider": "huggingchat", "model": "auto" }
-      ]
-    },
-    "coding-focused": {
-      "name": "coding-focused",
-      "description": "Best models for agentic coding, debugging, architecture — optimized for quality",
-      "strategy": "priority",
-      "enabled": true,
-      "models": [
-        { "provider": "deepseek", "model": "deepseek-coder" },
         { "provider": "mistral", "model": "codestral-latest" },
-        { "provider": "groq", "model": "llama-3.3-70b-versatile" },
         { "provider": "gemini", "model": "gemini-2.0-flash" },
-        { "provider": "nvidia", "model": "nemotron-4-340b-instruct" },
-        { "provider": "cerebras", "model": "llama3.1-70b" },
-        { "provider": "sambanova", "model": "llama-3.1-70b" },
+        { "provider": "nvidia", "model": "llama-3.1-70b-instruct" },
+        { "provider": "cohere", "model": "command-r-plus" },
+        { "provider": "siliconflow", "model": "deepseek-ai/DeepSeek-V3" },
+        { "provider": "siliconflow", "model": "Qwen/Qwen2.5-Coder-32B-Instruct" },
+        { "provider": "openrouter", "model": "meta-llama/llama-3.3-70b-instruct:free" },
         { "provider": "openrouter", "model": "qwen/qwen-2.5-coder-32b-instruct:free" },
-        { "provider": "openrouter", "model": "deepseek/deepseek-coder-v2:free" },
-        { "provider": "aihorde", "model": "any" },
-        { "provider": "opencode", "model": "auto" }
+        { "provider": "openrouter", "model": "auto" }
       ]
     },
-    "heavy-reasoning": {
-      "name": "heavy-reasoning",
-      "description": "Complex reasoning, architecture decisions, multi-step planning",
+    "combo/architecture": {
+      "name": "combo/architecture",
+      "description": "Deep reasoning, architecture design, and complex debugging combo",
       "strategy": "priority",
       "enabled": true,
       "models": [
         { "provider": "deepseek", "model": "deepseek-reasoner" },
-        { "provider": "nvidia", "model": "llama-3.1-405b-instruct" },
+        { "provider": "gemini", "model": "gemini-2.0-flash-thinking-exp" },
+        { "provider": "groq", "model": "deepseek-r1-distill-llama-70b" },
         { "provider": "nvidia", "model": "nemotron-4-340b-instruct" },
-        { "provider": "gemini", "model": "gemini-1.5-pro" },
-        { "provider": "mistral", "model": "mistral-large-latest" },
-        { "provider": "cohere", "model": "command-r-plus" },
-        { "provider": "openrouter", "model": "google/gemini-2.0-flash-thinking-exp:free" },
-        { "provider": "aihorde", "model": "any" },
-        { "provider": "opencode", "model": "auto" }
+        { "provider": "openrouter", "model": "deepseek/deepseek-r1:free" }
       ]
     },
-    "fast-inference": {
-      "name": "fast-inference",
-      "description": "Lowest latency for quick edits, autocomplete, simple tasks",
+    "combo/low-cost-batch": {
+      "name": "combo/low-cost-batch",
+      "description": "High-speed, low-latency combo for small scripts, string operations, and rapid tasks",
       "strategy": "priority",
       "enabled": true,
       "models": [
@@ -72,56 +44,8 @@
         { "provider": "groq", "model": "llama-3.1-8b-instant" },
         { "provider": "sambanova", "model": "llama-3.1-8b" },
         { "provider": "nvidia", "model": "llama-3.1-8b-instruct" },
-        { "provider": "gemini", "model": "gemini-2.0-flash" },
-        { "provider": "openrouter", "model": "meta-llama/llama-3.1-8b-instruct:free" },
-        { "provider": "deepinfra", "model": "meta-llama/Meta-Llama-3.1-8B-Instruct" },
-        { "provider": "aihorde", "model": "any" },
-        { "provider": "opencode", "model": "auto" }
-      ]
-    },
-    "free-fallback": {
-      "name": "free-fallback",
-      "description": "Core free providers only — simple, reliable",
-      "strategy": "priority",
-      "enabled": true,
-      "models": [
-        { "provider": "gemini", "model": "gemini-2.0-flash" },
-        { "provider": "groq", "model": "llama-3.3-70b-versatile" },
-        { "provider": "nvidia", "model": "nemotron-4-340b-instruct" },
-        { "provider": "deepseek", "model": "deepseek-chat" },
-        { "provider": "mistral", "model": "mistral-large-latest" },
-        { "provider": "openrouter", "model": "meta-llama/llama-3.1-70b-instruct:free" },
-        { "provider": "aihorde", "model": "any" },
-        { "provider": "opencode", "model": "auto" }
-      ]
-    },
-    "no-auth-only": {
-      "name": "no-auth-only",
-      "description": "Zero-setup providers — works instantly, no API keys needed",
-      "strategy": "priority",
-      "enabled": true,
-      "models": [
-        { "provider": "aihorde", "model": "any" },
-        { "provider": "opencode", "model": "auto" },
-        { "provider": "huggingchat", "model": "auto" },
-        { "provider": "ollama-cloud", "model": "auto" },
-        { "provider": "zcode", "model": "auto" }
-      ]
-    },
-    "round-robin-free": {
-      "name": "round-robin-free",
-      "description": "Distributes load evenly across all free providers",
-      "strategy": "round-robin",
-      "enabled": true,
-      "models": [
-        { "provider": "aihorde", "model": "any" },
-        { "provider": "opencode", "model": "auto" },
-        { "provider": "huggingchat", "model": "auto" },
-        { "provider": "ollama-cloud", "model": "auto" },
-        { "provider": "zcode", "model": "auto" },
-        { "provider": "gemini", "model": "auto" },
-        { "provider": "groq", "model": "auto" },
-        { "provider": "nvidia", "model": "auto" }
+        { "provider": "cloudflare", "model": "@cf/meta/llama-3-8b-instruct" },
+        { "provider": "openrouter", "model": "meta-llama/llama-3.1-8b-instruct:free" }
       ]
     }
   }

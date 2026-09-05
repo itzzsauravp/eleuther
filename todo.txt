@@ -1,0 +1,6 @@
+UPDATE THE README FILES
+UPDATE THE PORTS MAPPING
+
+
+Also remove all other combos
+Try to follow the README to install it fresh everything
