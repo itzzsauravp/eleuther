@@ -18,7 +18,7 @@
 All you need to do is clone this repository and run the unified installer:
 
 ```bash
-git clone https://github.com/itzzsauravp/omniroute-config.git eleuther
+git clone https://github.com/itzzsauravp/eleuther.git
 cd eleuther
 ./scripts/install.sh
 ```
@@ -122,7 +122,7 @@ All you need is your `~/.omniroute/api-keys.env` file. If it doesn't exist yet, 
 brew install node git
 
 # 2. Clone & install
-git clone https://github.com/itzzsauravp/omniroute-config.git eleuther
+git clone https://github.com/itzzsauravp/eleuther.git
 cd eleuther
 ./scripts/install.sh
 
@@ -140,7 +140,7 @@ claude
 sudo apt update && sudo apt install -y nodejs npm git
 
 # 2. Clone & install
-git clone https://github.com/itzzsauravp/omniroute-config.git eleuther
+git clone https://github.com/itzzsauravp/eleuther.git
 cd eleuther
 ./scripts/install.sh
 
@@ -158,7 +158,7 @@ claude
   1. Install [Node.js](https://nodejs.org/) and [Git for Windows](https://git-scm.com/) (includes Git Bash).
   2. Open Git Bash and run:
      ```bash
-     git clone https://github.com/itzzsauravp/omniroute-config.git eleuther
+     git clone https://github.com/itzzsauravp/eleuther.git
      cd eleuther
      ./scripts/install.sh
      ```
@@ -235,4 +235,4 @@ eleuther/
 ## 📝 License
 
 MIT — Copyright (c) 2026 **Saurav Parajulee**.  
-Powered by **OmniRoute**. _The best tokens are the free ones._
+_The best tokens are the free ones._
