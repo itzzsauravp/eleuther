@@ -1,30 +1,37 @@
 # ═══════════════════════════════════════════════════════════════
-# OmniRoute Config — Gitignore
+# Eleuther — Gitignore
 # ═══════════════════════════════════════════════════════════════
 
-# API Keys — NEVER commit these!
+# API Keys & Local Secrets
 api-keys.env
 .env
 .env.*
 *.key
 *.pem
 
-# OmniRoute local config
+# Local OmniRoute & Backups
 .omniroute/
-todo.txt
+.eleuther-backups/
+*.bak
+
+# Coding Agent Workspace Injectables (generated per-workspace)
+.claude/
+.opencode/
+.codex/
+AGENTS.md
+CONVENTIONS.md
+.aider.conf.yml
 
 # Dependencies
 node_modules/
 
-# OS files
+# OS and Editor files
 .DS_Store
 Thumbs.db
-
-# IDE
 .vscode/
 .idea/
 
-# Logs and Temp
+# Logs and Temp files
 *.log
 tmp/
 temp/

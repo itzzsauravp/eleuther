@@ -3,7 +3,7 @@
 # Eleuther — Terminal Agent Skill Synthesizer & Adapter Injector
 # ═══════════════════════════════════════════════════════════════
 # Usage:
-#   ./scripts/setup-skills.sh --role <role> --agent <agent> [--workspace <path>]
+#   ./scripts/setup-skills.sh --role <role> --agent <agent> [--workspace <path>] [--ecosystem]
 #
 # Roles:
 #   designer | frontend | backend | architect | qa | devops
@@ -11,7 +11,7 @@
 #   claude | codex | opencode | aider | all
 # ═══════════════════════════════════════════════════════════════
 
-set -e
+set +e
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; BLUE='\033[0;34m'; CYAN='\033[0;36m'; NC='\033[0m'
 print_success() { echo -e "${GREEN}✓ $1${NC}"; }
@@ -25,12 +25,14 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 ROLE=""
 AGENT=""
 WORKSPACE="$(pwd)"
+INSTALL_ECOSYSTEM=false
 
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
         --role) ROLE="$2"; shift 2 ;;
         --agent) AGENT="$2"; shift 2 ;;
         --workspace) WORKSPACE="$2"; shift 2 ;;
+        --ecosystem) INSTALL_ECOSYSTEM=true; shift ;;
         *) shift ;;
     esac
 done
@@ -114,6 +116,28 @@ if [ "$AGENT" = "all" ]; then
     run_adapter "aider"
 else
     run_adapter "$AGENT"
+fi
+
+# Also inject Claude commands globally into ~/.claude/commands if claude is selected
+if [ "$AGENT" = "claude" ] || [ "$AGENT" = "all" ]; then
+    mkdir -p "$HOME/.claude/commands"
+    [ -f "$CAVEMAN_FILE" ] && cp "$CAVEMAN_FILE" "$HOME/.claude/commands/optimize.md" 2>/dev/null || true
+    [ -f "$ACTIVE_BUNDLE" ] && cp "$ACTIVE_BUNDLE" "$HOME/.claude/commands/role-skills.md" 2>/dev/null || true
+fi
+
+# Ecosystem skills via npx skills
+if [ "$INSTALL_ECOSYSTEM" = true ]; then
+    print_info "Checking open-agent-skills ecosystem via npx skills..."
+    local_agent_target="claude-code"
+    [ "$AGENT" = "codex" ] && local_agent_target="codex"
+    [ "$AGENT" = "opencode" ] && local_agent_target="opencode"
+    [ "$AGENT" = "aider" ] && local_agent_target="aider"
+
+    if npx -y skills add vercel-labs/agent-skills --agent "$local_agent_target" -y -g >/dev/null 2>&1; then
+        print_success "Installed open ecosystem skills (vercel-labs/agent-skills)"
+    else
+        print_info "Ecosystem skills package installation skipped or completed offline."
+    fi
 fi
 
 print_success "Skill synthesis and adapter configuration complete!"

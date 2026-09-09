@@ -5,16 +5,18 @@
 # Created by Saurav Parajulee | Powered by the OmniRoute Engine
 # Cross-compatible: Linux, macOS, Windows (WSL / Git Bash)
 #
-# Highlights:
-#   1. Automatic pre-install safety backup (~/.omniroute-backups/latest)
-#   2. 1-click rollback available at any time (./scripts/revert.sh)
-#   3. Interactive role & terminal agent selection with Caveman token optimizer
-#   4. Provider registration & intelligent routing combo construction
-#   5. Cleanly tagged shell environment exports
-#
-# Usage:
-#   ./scripts/install.sh
-#   ./scripts/install.sh --role backend --agent claude -y
+# Steps:
+#   1. Safety backup (~/.eleuther-backups/latest)
+#   2. Role & Terminal Agent selection
+#   3. System requirements verification (Node.js, npm, npx, curl)
+#   4. Global installation of OmniRoute and chosen coding agent CLI
+#   5. Configure ~/.omniroute/.env with full encryption keys & settings
+#   6. Scaffolding ~/.omniroute/api-keys.env template (no user registration)
+#   7. Register zero-credential free providers (no keys needed)
+#   8. Build baseline free routing tiers
+#   9. Synthesize Role & Caveman skills + open-agent ecosystem skills
+#  10. Tailor shell environment exports (.zshrc / .bashrc) with modular tagged blocks
+#  11. "What To Do Next" onboarding guide (including backup reminders)
 # ═══════════════════════════════════════════════════════════════
 
 set +e
@@ -32,7 +34,7 @@ print_header() {
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Parse optional command line arguments
+# Parse CLI arguments
 ARG_ROLE=""
 ARG_AGENT=""
 AUTO_YES=false
@@ -47,26 +49,15 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # ═══════════════════════════════════════════════════════════════
-# Step 1: Pre-Install Backup & Zero-Risk Safety Guarantee
+# Step 1: Pre-Install Safety Backup
 # ═══════════════════════════════════════════════════════════════
 print_header "Step 1/10 — Creating Automated Safety Backup"
-bash "$SCRIPT_DIR/backup.sh"
-
-echo ""
-echo -e "${GREEN}${BOLD}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}${BOLD} 🛡️  ELEUTHER ZERO-RISK SAFETY GUARANTEE${NC}"
-echo -e "${GREEN}${BOLD}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "✓ A complete backup of your existing configs has been created at:"
-echo -e "  ${CYAN}$HOME/.omniroute-backups/latest/${NC}"
-echo -e "→ You can completely undo ALL changes at any time by running:"
-echo -e "  ${YELLOW}${BOLD}./scripts/revert.sh${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
-echo ""
+bash "$SCRIPT_DIR/backup.sh" --all
 
 # ═══════════════════════════════════════════════════════════════
 # Step 2: Interactive Role & Terminal Agent Selection
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 2/10 — Role & Terminal Agent Persona Onboarding"
+print_header "Step 2/10 — Role & Terminal Agent Selection"
 
 SELECTED_ROLE="$ARG_ROLE"
 if [ -z "$SELECTED_ROLE" ]; then
@@ -99,7 +90,7 @@ SELECTED_AGENT="$ARG_AGENT"
 if [ -z "$SELECTED_AGENT" ]; then
     if [ -t 0 ] && [ "$AUTO_YES" = false ]; then
         echo ""
-        echo -e "${BOLD}Select your primary terminal coding agent:${NC}"
+        echo -e "${BOLD}Select your terminal coding agent:${NC}"
         echo "  1) Claude Code         (Anthropic CLI commands & routing) [Default]"
         echo "  2) OpenAI Codex / CLI  (AGENTS.md system instructions)"
         echo "  3) OpenCode            (.opencode rules & local endpoint)"
@@ -120,112 +111,239 @@ fi
 print_success "Selected Terminal Agent: $SELECTED_AGENT"
 
 # ═══════════════════════════════════════════════════════════════
-# Step 3: Check Node.js & npm
+# Step 3: Check System Environment
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 3/10 — Check Node.js & Environment"
+print_header "Step 3/10 — Check Node.js, npm & Tools"
 if command -v node >/dev/null 2>&1; then
     print_success "Node.js $(node -v)"
 else
-    print_error "Node.js is missing."
+    print_error "Node.js is missing. Please install Node.js (v18+ recommended):"
     echo "  macOS:   brew install node"
     echo "  Linux:   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt install -y nodejs"
     echo "  Windows: https://nodejs.org/ or use WSL2"
     exit 1
 fi
-print_success "npm $(npm -v)"
+
+if command -v npm >/dev/null 2>&1; then
+    print_success "npm $(npm -v)"
+else
+    print_error "npm is missing. Please ensure npm is installed with Node.js."
+    exit 1
+fi
 
 # ═══════════════════════════════════════════════════════════════
-# Step 4: Install OmniRoute routing engine globally if needed
+# Step 4: Install OmniRoute Core Engine & Terminal Agent CLI
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 4/10 — Check OmniRoute Core Engine"
-if command -v omniroute >/dev/null 2>&1; then
-    print_success "omniroute core engine already installed"
-else
-    print_info "Installing omniroute core globally (npm install -g omniroute)..."
-    npm install -g omniroute
-    if command -v omniroute >/dev/null 2>&1; then
-        print_success "omniroute core installed successfully"
-    else
-        print_error "omniroute install failed. Try running: sudo npm install -g omniroute"
-        exit 1
+print_header "Step 4/10 — Check OmniRoute Core & Terminal Agents"
+
+install_global_pkg() {
+    local cmd_name="$1"
+    local npm_pkg="$2"
+
+    if command -v "$cmd_name" >/dev/null 2>&1; then
+        print_success "$cmd_name is already installed."
+        return 0
     fi
-fi
+
+    print_info "Installing $cmd_name globally (npm install -g $npm_pkg)..."
+    if npm install -g "$npm_pkg" >/dev/null 2>&1; then
+        if command -v "$cmd_name" >/dev/null 2>&1; then
+            print_success "$cmd_name installed successfully."
+            return 0
+        fi
+    fi
+
+    print_warning "$cmd_name standard install failed or not in PATH. Trying with sudo..."
+    if sudo npm install -g "$npm_pkg" >/dev/null 2>&1; then
+        print_success "$cmd_name installed successfully (sudo)."
+    else
+        print_warning "Could not auto-install $cmd_name. You can install it manually: npm install -g $npm_pkg"
+    fi
+}
+
+# OmniRoute Core
+install_global_pkg "omniroute" "omniroute"
+
+# Selected Terminal Agent
+case "$SELECTED_AGENT" in
+    claude)
+        install_global_pkg "claude" "@anthropic-ai/claude-code"
+        ;;
+    codex)
+        install_global_pkg "codex" "@openai/codex"
+        ;;
+    opencode)
+        install_global_pkg "opencode" "@opencode/cli"
+        ;;
+    aider)
+        if command -v aider >/dev/null 2>&1; then
+            print_success "aider is already installed."
+        else
+            print_info "Checking python3 pip for aider-chat..."
+            if command -v pip3 >/dev/null 2>&1 && pip3 install aider-chat >/dev/null 2>&1; then
+                print_success "aider installed successfully via pip3."
+            else
+                install_global_pkg "aider" "aider-chat"
+            fi
+        fi
+        ;;
+esac
 
 # ═══════════════════════════════════════════════════════════════
-# Step 5: Configure ~/.omniroute and Encryption Key
+# Step 5: Configure ~/.omniroute and Encryption Key Secrets
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 5/10 — Configure Local Environment & Secrets"
+print_header "Step 5/10 — Configure OmniRoute .env & Security Secrets"
+
 mkdir -p "$HOME/.omniroute"
-print_success "$HOME/.omniroute directory ready"
+OMNI_ENV="$HOME/.omniroute/.env"
 
-if [ ! -f "$HOME/.omniroute/.env" ] || ! grep -q "STORAGE_ENCRYPTION_KEY=" "$HOME/.omniroute/.env" 2>/dev/null; then
-    print_info "Generating secure STORAGE_ENCRYPTION_KEY in ~/.omniroute/.env..."
-    KEY=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))" 2>/dev/null || openssl rand -hex 32 2>/dev/null || echo "eleuther-secret-$(date +%s)")
-    cat > "$HOME/.omniroute/.env" <<EOF
-# Eleuther / OmniRoute — generated by Eleuther install.sh
-STORAGE_ENCRYPTION_KEY=$KEY
+gen_hex_secret() {
+    local bytes="$1"
+    node -e "console.log(require('crypto').randomBytes($bytes).toString('hex'))" 2>/dev/null \
+        || openssl rand -hex "$bytes" 2>/dev/null \
+        || echo "eleuther-$RANDOM-$(date +%s)"
+}
+
+gen_base64_secret() {
+    local bytes="$1"
+    node -e "console.log(require('crypto').randomBytes($bytes).toString('base64'))" 2>/dev/null \
+        || openssl rand -base64 "$bytes" 2>/dev/null \
+        || echo "eleuther-$RANDOM-$(date +%s)"
+}
+
+if [ ! -f "$OMNI_ENV" ]; then
+    print_info "Generating complete ~/.omniroute/.env security configuration..."
+    ENC_KEY=$(gen_hex_secret 32)
+    JWT_SEC=$(gen_base64_secret 48)
+    API_SEC=$(gen_hex_secret 32)
+    INIT_PWD=$(gen_hex_secret 16)
+
+    cat > "$OMNI_ENV" <<EOF
+# ═══════════════════════════════════════════════════════════════
+# Eleuther / OmniRoute Runtime Environment
+# ═══════════════════════════════════════════════════════════════
+
+# Security & Secrets
+STORAGE_ENCRYPTION_KEY=$ENC_KEY
+STORAGE_ENCRYPTION_KEY_VERSION=v1
+JWT_SECRET=$JWT_SEC
+API_KEY_SECRET=$API_SEC
+INITIAL_PASSWORD=$INIT_PWD
+
+# Network & Server Port
+PORT=20128
+DASHBOARD_PORT=20128
+
+# Proxy Access Control
+# false allows local coding agents (claude, codex, aider) to route without proxy tokens
+REQUIRE_API_KEY=false
+NODE_ENV=production
 EOF
-    chmod 600 "$HOME/.omniroute/.env" 2>/dev/null || true
-    print_success ".env created with private encryption key"
+    chmod 600 "$OMNI_ENV" 2>/dev/null || true
+    print_success "Created ~/.omniroute/.env with full encryption secrets & proxy authorization"
 else
-    print_success ".env encryption key verified"
+    print_info "Checking existing ~/.omniroute/.env for missing required secrets..."
+    
+    if ! grep -q "STORAGE_ENCRYPTION_KEY=" "$OMNI_ENV" 2>/dev/null; then
+        echo "STORAGE_ENCRYPTION_KEY=$(gen_hex_secret 32)" >> "$OMNI_ENV"
+        echo "STORAGE_ENCRYPTION_KEY_VERSION=v1" >> "$OMNI_ENV"
+    fi
+    if ! grep -q "JWT_SECRET=" "$OMNI_ENV" 2>/dev/null; then
+        echo "JWT_SECRET=$(gen_base64_secret 48)" >> "$OMNI_ENV"
+    fi
+    if ! grep -q "API_KEY_SECRET=" "$OMNI_ENV" 2>/dev/null; then
+        echo "API_KEY_SECRET=$(gen_hex_secret 32)" >> "$OMNI_ENV"
+    fi
+    if ! grep -q "INITIAL_PASSWORD=" "$OMNI_ENV" 2>/dev/null; then
+        echo "INITIAL_PASSWORD=$(gen_hex_secret 16)" >> "$OMNI_ENV"
+    fi
+    if ! grep -q "REQUIRE_API_KEY=" "$OMNI_ENV" 2>/dev/null; then
+        echo "REQUIRE_API_KEY=false" >> "$OMNI_ENV"
+    fi
+    if ! grep -q "PORT=" "$OMNI_ENV" 2>/dev/null; then
+        echo "PORT=20128" >> "$OMNI_ENV"
+    fi
+
+    chmod 600 "$OMNI_ENV" 2>/dev/null || true
+    print_success "~/.omniroute/.env verified and updated"
 fi
 
 # ═══════════════════════════════════════════════════════════════
-# Step 6: Setup api-keys.env
+# Step 6: Setup api-keys.env Template (No Registration Yet)
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 6/10 — Setup api-keys.env"
-if [ -f "$HOME/.omniroute/api-keys.env" ]; then
-    print_success "api-keys.env already exists in ~/.omniroute/"
+print_header "Step 6/10 — Prepare api-keys.env Template"
+
+KEYS_ENV="$HOME/.omniroute/api-keys.env"
+if [ -f "$KEYS_ENV" ]; then
+    print_success "api-keys.env already exists at $KEYS_ENV"
 else
     if [ -f "$REPO_ROOT/configs/api-keys.env.example" ]; then
-        cp "$REPO_ROOT/configs/api-keys.env.example" "$HOME/.omniroute/api-keys.env"
-        chmod 600 "$HOME/.omniroute/api-keys.env" 2>/dev/null || true
-        print_success "Created ~/.omniroute/api-keys.env from template"
-        print_warning "Remember to add your API keys: nano ~/.omniroute/api-keys.env"
+        cp "$REPO_ROOT/configs/api-keys.env.example" "$KEYS_ENV"
+        chmod 600 "$KEYS_ENV" 2>/dev/null || true
+        print_success "Created template at: $KEYS_ENV"
     fi
 fi
+print_info "Note: User API keys are NOT registered during installation."
+print_info "You can add your keys later and register them with ./scripts/register-keys.sh"
 
 # ═══════════════════════════════════════════════════════════════
-# Step 7: Register Providers
+# Step 7: Register Zero-Auth Free Providers Only
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 7/10 — Register Model Providers"
-print_info "Registering zero-key free providers..."
+print_header "Step 7/10 — Register Free Zero-Credential Providers"
+
+print_info "Registering zero-credential free routes (no keys required)..."
 NOAUTH=(aihorde opencode huggingchat firecrawl searxng-search ollama-cloud zcode)
 for p in "${NOAUTH[@]}"; do
     omniroute providers add "$p" --no-credential --yes >/dev/null 2>&1 \
-        && print_success "$p (free, no key required)" \
-        || print_warning "$p (already registered or skipped)"
+        && print_success "$p (free, zero-key)" \
+        || print_info "$p (already active or skipped)"
 done
 
-if [ -f "$HOME/.omniroute/api-keys.env" ] && grep -q "=" "$HOME/.omniroute/api-keys.env" 2>/dev/null; then
-    print_info "Registering providers from ~/.omniroute/api-keys.env..."
-    bash "$SCRIPT_DIR/add-keys.sh" || print_warning "Some keys in api-keys.env had notices"
+# ═══════════════════════════════════════════════════════════════
+# Step 8: Build Baseline Free Combos
+# ═══════════════════════════════════════════════════════════════
+print_header "Step 8/10 — Build Baseline Free Routing Tier"
+
+EXISTING_COMBOS=$(omniroute combo list 2>&1 | grep -E "○|●" | awk '{print $2}' | tr -d ' ' || true)
+for c in $EXISTING_COMBOS; do
+    echo y | omniroute combo delete "$c" >/dev/null 2>&1 || true
+done
+
+CONFIGURED=$(omniroute providers list 2>&1 | grep -E "^[a-f0-9]" | awk '{print $2}' | sort -u)
+FREE_ARGS=()
+for p in opencode aihorde huggingchat zcode; do
+    if echo "$CONFIGURED" | grep -qx "$p"; then
+        FREE_ARGS+=(--model "$p/auto")
+    fi
+done
+
+if [ ${#FREE_ARGS[@]} -gt 0 ]; then
+    omniroute combo create "combo/execution" --strategy "round-robin" "${FREE_ARGS[@]}" >/dev/null 2>&1 || true
+    omniroute combo switch "combo/execution" >/dev/null 2>&1 || true
+    print_success "Baseline free combo created and active"
 else
-    print_warning "No keys found in ~/.omniroute/api-keys.env yet (free tiers will still work)"
+    print_info "Baseline combo setup complete"
 fi
 
 # ═══════════════════════════════════════════════════════════════
-# Step 8: Build Routing Combos
+# Step 9: Inject Skills & Terminal Agent Adapter
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 8/10 — Build & Validate Intelligent Combos"
-bash "$SCRIPT_DIR/build-combos.sh" --switch
-omniroute combo switch combo/execution >/dev/null 2>&1 || true
-print_success "Active combo set to: combo/execution"
+print_header "Step 9/10 — Inject Skills & Agent Adapters"
+
+bash "$SCRIPT_DIR/setup-skills.sh" \
+    --role "$SELECTED_ROLE" \
+    --agent "$SELECTED_AGENT" \
+    --workspace "$REPO_ROOT" \
+    --ecosystem
+
+print_success "Configured Caveman optimizer, $SELECTED_ROLE persona, and agent skills"
 
 # ═══════════════════════════════════════════════════════════════
-# Step 9: Synthesize Caveman & Role Skills into Terminal Agent
+# Step 10: Shell Environment Configuration (Modular Tagged Blocks)
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 9/10 — Inject Skills & Terminal Agent Adapter"
-bash "$SCRIPT_DIR/setup-skills.sh" --role "$SELECTED_ROLE" --agent "$SELECTED_AGENT" --workspace "$REPO_ROOT"
-print_success "Injected Caveman token optimizer & $SELECTED_ROLE skills into $SELECTED_AGENT adapter"
+print_header "Step 10/10 — Shell Environment & Tailored Exports"
 
-# ═══════════════════════════════════════════════════════════════
-# Step 10: Shell Environment Configuration
-# ═══════════════════════════════════════════════════════════════
-print_header "Step 10/10 — Shell Environment & Fast Aliases"
-
-# Detect target shell profile
+# Detect shell profile
 SHELL_RC="$HOME/.zshrc"
 if [ -n "$BASH_VERSION" ] || [ ! -f "$HOME/.zshrc" ]; then
     if [ -f "$HOME/.bashrc" ]; then
@@ -235,68 +353,152 @@ if [ -n "$BASH_VERSION" ] || [ ! -f "$HOME/.zshrc" ]; then
     fi
 fi
 
-# Remove previous managed block if present (cross-platform clean)
+# Clean prior monolithic block or untagged legacy aliases if present
 if [ -f "$SHELL_RC" ]; then
     tmp_rc="${SHELL_RC}.tmp.$$"
     awk '
         BEGIN { skip=0 }
         /# <<< (OmniRoute|Eleuther) Managed Block <<</ { skip=1; next }
         /# >>> (OmniRoute|Eleuther) Managed Block >>>/ { skip=0; next }
+        /# ── OmniRoute noise-filtered aliases/ { skip=1; next }
+        skip && /^alias or-/ { next }
         !skip { print }
     ' "$SHELL_RC" > "$tmp_rc" 2>/dev/null && mv "$tmp_rc" "$SHELL_RC"
 fi
 
+# Helper function to remove a specific tagged block from shell RC
+clean_tagged_block() {
+    local target_tag="$1"
+    [ ! -f "$SHELL_RC" ] && return 0
+    local tmp_rc="${SHELL_RC}.tmp.$$"
+    awk -v tag="$target_tag" '
+        BEGIN { skip=0 }
+        $0 ~ "# <<< Eleuther: " tag " <<<" { skip=1; next }
+        $0 ~ "# >>> Eleuther: " tag " >>>" { skip=0; next }
+        !skip { print }
+    ' "$SHELL_RC" > "$tmp_rc" 2>/dev/null && mv "$tmp_rc" "$SHELL_RC"
+}
+
+# 1. Update Telemetry & Monitoring Aliases (Noise-Filtered)
+clean_tagged_block "Telemetry"
 cat >> "$SHELL_RC" <<'EOF'
 
-# <<< Eleuther Managed Block <<<
-# Eleuther Local Proxy Configuration (powered by OmniRoute)
+# <<< Eleuther: Telemetry <<<
+# OmniRoute Monitoring & Telemetry (Noise-Filtered)
+alias or-serve="omniroute serve"
+alias or-combos="omniroute combo list 2>&1 | tail -n +5"
+alias or-usage="omniroute usage analytics 2>&1 | tail -n +5"
+alias or-util="omniroute usage utilization 2>&1 | tail -n +5"
+alias or-logs="omniroute usage logs 2>&1 | tail -n +5"
+alias or-quota="omniroute quota 2>&1 | tail -n +5"
+alias or-telemetry="omniroute telemetry 2>&1 | tail -n +5"
+alias or-cost="omniroute cost 2>&1 | tail -n +5"
+alias or-status="omniroute providers status 2>&1 | tail -n +5"
+alias or-metrics="omniroute providers metrics 2>&1 | tail -n +5"
+# >>> Eleuther: Telemetry >>>
+EOF
+
+# 2. Update Agent-Specific Variables
+clean_tagged_block "Agent $SELECTED_AGENT"
+
+case "$SELECTED_AGENT" in
+    claude)
+        cat >> "$SHELL_RC" <<'EOF'
+
+# <<< Eleuther: Agent claude <<<
+# Claude Code Local Proxy Configuration
 export ANTHROPIC_BASE_URL="http://localhost:20128/v1"
 export ANTHROPIC_API_KEY="omni-route-key"
 export ANTHROPIC_DEFAULT_SONNET_MODEL="auto/coding"
 export ANTHROPIC_DEFAULT_OPUS_MODEL="auto/coding"
 export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
+# >>> Eleuther: Agent claude >>>
+EOF
+        ;;
+    codex)
+        cat >> "$SHELL_RC" <<'EOF'
+
+# <<< Eleuther: Agent codex <<<
+# OpenAI Codex / CLI Local Proxy Configuration
+export OPENAI_BASE_URL="http://localhost:20128/v1"
+export OPENAI_API_BASE="http://localhost:20128/v1"
+export OPENAI_API_KEY="omni-route-key"
+# >>> Eleuther: Agent codex >>>
+EOF
+        ;;
+    opencode)
+        cat >> "$SHELL_RC" <<'EOF'
+
+# <<< Eleuther: Agent opencode <<<
+# OpenCode Local Proxy Configuration
+export OPENCODE_API_BASE="http://localhost:20128/v1"
 export OPENAI_BASE_URL="http://localhost:20128/v1"
 export OPENAI_API_KEY="omni-route-key"
-export OPENAI_API_BASE="http://localhost:20128/v1"
-
-# Fast Management Aliases
-alias omni-stats="omniroute usage analytics"
-alias or-combos="omniroute combo list 2>&1 | tail -n +5"
-alias or-quota="omniroute quota 2>&1 | tail -n +5"
-alias or-status="omniroute providers status 2>&1 | tail -n +5"
-alias or-serve="omniroute serve"
-# >>> Eleuther Managed Block >>>
+# >>> Eleuther: Agent opencode >>>
 EOF
+        ;;
+    aider)
+        cat >> "$SHELL_RC" <<'EOF'
 
-print_success "Shell exports and aliases added to: $SHELL_RC"
+# <<< Eleuther: Agent aider <<<
+# Aider CLI Local Proxy Configuration
+export OPENAI_API_BASE="http://localhost:20128/v1"
+export OPENAI_API_KEY="omni-route-key"
+export AIDER_MODEL="openai/auto/coding"
+export AIDER_OPENAI_API_BASE="http://localhost:20128/v1"
+# >>> Eleuther: Agent aider >>>
+EOF
+        ;;
+esac
+
+print_success "Tagged shell exports and noise-filtered telemetry aliases added to: $SHELL_RC"
 
 # ═══════════════════════════════════════════════════════════════
-# Completion Summary
+# Completion & What To Do Next
 # ═══════════════════════════════════════════════════════════════
-print_header "🎉 ONBOARDING COMPLETE!"
-echo -e "Eleuther is configured and ready for action!"
-echo -e ""
-echo -e "Role Selected:     ${BOLD}${SELECTED_ROLE^}${NC}"
-echo -e "Terminal Agent:    ${BOLD}${SELECTED_AGENT^}${NC}"
-echo -e "Token Optimizer:   ${BOLD}Caveman Protocol (Active)${NC}"
-echo -e "Rollback Command:  ${BOLD}./scripts/revert.sh${NC}"
-echo -e ""
-echo -e "${BOLD}Quick Start in 3 Steps:${NC}"
-echo -e "1. Start the local proxy server:"
-echo -e "   ${CYAN}omniroute serve &${NC}"
-echo -e ""
-echo -e "2. Reload your shell environment:"
+print_header "🎉 INSTALLATION COMPLETE!"
+
+echo -e "Selected Role:   ${BOLD}${SELECTED_ROLE^}${NC}"
+echo -e "Terminal Agent:  ${BOLD}${SELECTED_AGENT^}${NC}"
+echo -e "Zero-Auth Free:  ${BOLD}Active & Ready${NC}"
+echo -e "Safety Backup:   ${BOLD}~/.eleuther-backups/latest/${NC}"
+echo ""
+echo -e "${BOLD}${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+echo -e "${BOLD}${GREEN} 🚀 WHAT TO DO NEXT${NC}"
+echo -e "${BOLD}${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+echo ""
+echo -e "${BOLD}1. (Optional) Add your API Keys for Premium / High-Rate Models:${NC}"
+echo -e "   Open your keys file:  ${CYAN}nano ~/.omniroute/api-keys.env${NC}"
+echo -e "   Paste any keys you have (Gemini, Groq, DeepSeek, etc.) and save."
+echo ""
+echo -e "${BOLD}2. Register Your Keys & Build Intelligent Failover Combos:${NC}"
+echo -e "   Run the combo builder:  ${CYAN}./scripts/register-keys.sh${NC}"
+echo -e "   ${YELLOW}(If you only want zero-credential free routes, you can skip step 1 & 2)${NC}"
+echo ""
+echo -e "${BOLD}3. Reload Your Shell Profile:${NC}"
 echo -e "   ${CYAN}source $SHELL_RC${NC}"
-echo -e ""
-echo -e "3. Launch your terminal agent:"
+echo ""
+echo -e "${BOLD}4. Start the OmniRoute Local Proxy:${NC}"
+echo -e "   ${CYAN}omniroute serve &${NC}"
+echo ""
+echo -e "${BOLD}5. Launch Your Terminal Coding Agent:${NC}"
 case "$SELECTED_AGENT" in
     claude) echo -e "   ${CYAN}claude${NC}" ;;
-    codex)  echo -e "   ${CYAN}codex${NC} (or your OpenAI CLI command)" ;;
+    codex)  echo -e "   ${CYAN}codex${NC}" ;;
     opencode) echo -e "   ${CYAN}opencode${NC}" ;;
     aider)  echo -e "   ${CYAN}aider${NC}" ;;
-    *)      echo -e "   ${CYAN}claude${NC}" ;;
 esac
-echo -e ""
-echo -e "To add or update API keys at any time:"
-echo -e "   1. Edit:  ${CYAN}nano ~/.omniroute/api-keys.env${NC}"
-echo -e "   2. Sync:  ${CYAN}./scripts/add-keys.sh${NC}"
+echo ""
+echo -e "${BOLD}6. Monitor Routes & Telemetry Anytime:${NC}"
+echo -e "   Check active combos:    ${CYAN}or-combos${NC}"
+echo -e "   Live model status:      ${CYAN}or-status${NC}"
+echo -e "   Token quota & budget:   ${CYAN}or-quota${NC}"
+echo -e "   Usage analytics:        ${CYAN}or-usage${NC}"
+echo ""
+echo -e "${BOLD}🛡️  Safety Reminder — Keep Backups of Your Settings:${NC}"
+echo -e "   Before changing roles, reconfiguring agents, or updating keys,"
+echo -e "   always snapshot your entire environment with:"
+echo -e "     ${CYAN}./scripts/backup.sh${NC}"
+echo -e "   Backups are safely preserved in: ${BOLD}~/.eleuther-backups/${NC}"
+echo -e "   To clean up or rollback anytime: ${CYAN}./scripts/uninstall.sh${NC}"
+echo ""
