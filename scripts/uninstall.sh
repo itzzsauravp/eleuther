@@ -81,6 +81,61 @@ print_header "Eleuther Granular Uninstaller & Cleanup Engine"
 echo "This wizard allows you to selectively clean components or remove everything."
 echo ""
 
+# ── 0. Kill OmniRoute Server ─────────────────────────────────────────────────
+print_header "Killing OmniRoute Server Process"
+
+# Read the port from .env, fall back to 20128
+OMNI_PORT=20128
+if [ -f "$HOME/.omniroute/.env" ]; then
+    _port=$(grep -E '^PORT=' "$HOME/.omniroute/.env" | cut -d= -f2 | tr -d '[:space:]')
+    [ -n "$_port" ] && OMNI_PORT="$_port"
+fi
+print_info "Targeting OmniRoute on port $OMNI_PORT..."
+
+kill_omniroute() {
+    local killed=0
+
+    # Method 1: lsof — most reliable on macOS & Linux
+    if command -v lsof >/dev/null 2>&1; then
+        PIDS=$(lsof -ti tcp:"$OMNI_PORT" 2>/dev/null || true)
+        for pid in $PIDS; do
+            kill -9 "$pid" 2>/dev/null && print_success "Killed PID $pid (lsof)" && killed=1
+        done
+    fi
+
+    # Method 2: fuser — Linux standard
+    if command -v fuser >/dev/null 2>&1; then
+        fuser -k -KILL "${OMNI_PORT}/tcp" >/dev/null 2>&1 && print_success "Killed via fuser" && killed=1 || true
+    fi
+
+    # Method 3: ss + kill — fallback for minimal Linux environments
+    if command -v ss >/dev/null 2>&1; then
+        PIDS=$(ss -tlnp "sport = :$OMNI_PORT" 2>/dev/null | grep -oP 'pid=\K[0-9]+' || true)
+        for pid in $PIDS; do
+            kill -9 "$pid" 2>/dev/null && print_success "Killed PID $pid (ss)" && killed=1
+        done
+    fi
+
+    # Method 4: pkill on process name — catches any stray omniroute node processes
+    pkill -9 -f "omniroute" 2>/dev/null && print_success "Killed omniroute process(es) by name (pkill)" && killed=1 || true
+
+    # Final verification
+    sleep 0.5
+    if command -v lsof >/dev/null 2>&1 && lsof -ti tcp:"$OMNI_PORT" >/dev/null 2>&1; then
+        print_error "Port $OMNI_PORT still in use after kill attempts — you may need to reboot or kill manually."
+    elif command -v ss >/dev/null 2>&1 && ss -tlnp 2>/dev/null | grep -q ":$OMNI_PORT "; then
+        print_error "Port $OMNI_PORT still in use after kill attempts — you may need to reboot or kill manually."
+    else
+        if [ "$killed" -eq 1 ]; then
+            print_success "Port $OMNI_PORT is clear — OmniRoute is 100% stopped."
+        else
+            print_info "OmniRoute was not running on port $OMNI_PORT."
+        fi
+    fi
+}
+
+kill_omniroute
+
 # 1. Option to restore from backup first
 if [ -d "$BACKUP_ROOT" ]; then
     LATEST_BACKUP=""

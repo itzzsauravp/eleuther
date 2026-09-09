@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════
-# Eleuther — Register API Keys & Build Intelligent Combos
+# Eleuther — Register API Keys, Free Providers & Build Intelligent Combos
 # ═══════════════════════════════════════════════════════════════
 # 1. Inspects ~/.omniroute/api-keys.env for active user API keys
-# 2. Validates keys (aborts if empty or template-only)
+# 2. Validates keys (warns if empty but continues to free providers)
 # 3. Registers providers securely into OmniRoute's encrypted store
-# 4. Compiles and activates multi-tier failover combos
-# 5. Verifies routing with a live simulation dry-run
+# 4. Registers ALL free/no-auth providers (Pollinations, Cloudflare, etc.)
+# 5. Compiles and activates multi-tier failover combos
+# 6. Verifies routing with a live simulation dry-run
 # ═══════════════════════════════════════════════════════════════
 
 set +e
@@ -141,28 +142,26 @@ done < "$ENV_FILE"
 
 if [ ${#VALID_KEYS[@]} -eq 0 ]; then
     echo ""
-    print_error "No active API keys found in $ENV_FILE!"
+    print_warning "No active API keys found in $ENV_FILE."
     echo ""
-    echo -e "${YELLOW}Please add at least one valid API key before running this script.${NC}"
-    echo -e "  1. Edit:  ${CYAN}nano $ENV_FILE${NC}"
-    echo -e "  2. Save your keys and exit nano (Ctrl+O, Enter, Ctrl+X)"
-    echo -e "  3. Run:   ${CYAN}./scripts/register-keys.sh${NC}"
-    echo ""
-    echo -e "Tip: You can get free keys with generous daily limits from:"
+    echo -e "${YELLOW}Tip: You can get free keys with generous daily limits from:${NC}"
     echo -e "  - Google Gemini:   https://aistudio.google.com/"
     echo -e "  - Groq Cloud:      https://console.groq.com/"
     echo -e "  - OpenRouter:      https://openrouter.ai/"
     echo -e "  - Cerebras:        https://cloud.cerebras.ai/"
     echo ""
-    exit 1
+    print_info "Skipping API key registration — continuing to register free no-auth providers..."
+    echo ""
+else
+    print_success "Found ${#VALID_KEYS[@]} configured API key(s): ${VALID_PROVIDERS[*]}"
 fi
 
-print_success "Found ${#VALID_KEYS[@]} configured API key(s): ${VALID_PROVIDERS[*]}"
+if [ ${#VALID_KEYS[@]} -gt 0 ]; then
 
 # ═══════════════════════════════════════════════════════════════
-# Step 2: Register Providers
+# Step 2: Register API Key Providers
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 2/3 — Registering Providers in OmniRoute"
+print_header "Step 2/6 — Registering API Key Providers in OmniRoute"
 
 ADDED=0; SKIPPED=0; FAILED=0
 
@@ -189,10 +188,68 @@ done
 echo ""
 print_info "Provider sync: $ADDED registered, $SKIPPED existing, $FAILED failed"
 
+fi  # end: if [ ${#VALID_KEYS[@]} -gt 0 ]
+
 # ═══════════════════════════════════════════════════════════════
-# Step 3: Compile Routing Combos
+# Step 3: Register Free No-Auth Providers (Always Runs)
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 3/3 — Compiling & Testing Failover Combos"
+print_header "Step 3/6 — Registering Free No-Auth Providers"
+
+print_info "Adding free providers that require NO API key..."
+echo ""
+
+# Full list of no-auth / forever-free providers visible in OmniRoute
+# These correspond to what shows up in the OmniRoute node map as reachable
+# without any credentials (Pollinations, Cloudflare Workers AI, HuggingFace
+# inference endpoints, and community routers).
+NOAUTH_PROVIDERS=(
+    "pollinations"          # Pollinations AI        — free generative models, no key needed
+    "cloudflare-ai"        # Cloudflare Workers AI  — free inference on edge (Workers AI)
+    "huggingchat"          # HuggingFace Chat       — HF open model inference, no key
+    "huggingface"          # HuggingFace Inference  — serverless public endpoints
+    "openrouter"           # OpenRouter (free tier) — 50+ free models via no-auth tier
+    "aihorde"              # AI Horde               — community GPU cluster, zero key
+    "opencode"             # OpenCode               — local/cloud open inference
+    "zcode"                # ZCode                  — zero-credential open coding models
+    "firecrawl"            # Firecrawl              — web extraction & scraping
+    "searxng-search"       # SearXNG               — privacy metasearch engine
+    "ollama-cloud"         # Ollama Cloud           — remote open model inference
+    "api-airforce"         # Airforce               — free tier API provider
+    "llm7"                 # LLM7                   — free community endpoints
+    "freeinference"        # FreeInference          — open inference router
+    "freemodel-dev"        # FreeModel Dev          — zero-key dev models
+    "dgrid"                # DGrid                  — distributed compute models
+    "zenmux"               # ZenMux                 — aggregated free endpoints
+    "openadapter"          # OpenAdapter            — protocol adapter bridge
+)
+
+NOAUTH_ADDED=0
+NOAUTH_SKIPPED=0
+
+for provider in "${NOAUTH_PROVIDERS[@]}"; do
+    # Strip inline comment from provider name
+    PNAME="${provider%%[[:space:]]*}"
+    echo -n "  Adding $PNAME (no-auth)... "
+    OUTPUT=$(omniroute providers add "$PNAME" --no-credential --yes 2>&1 || true)
+    if echo "$OUTPUT" | grep -qi "added\|updated\|registered"; then
+        print_success "registered"
+        ((NOAUTH_ADDED++))
+    elif echo "$OUTPUT" | grep -qi "already\|exists"; then
+        print_warning "already active"
+        ((NOAUTH_SKIPPED++))
+    else
+        # Many no-auth providers silently succeed or have different output
+        print_info "attempted (check: or-status)"
+        ((NOAUTH_ADDED++))
+    fi
+done
+
+echo ""
+print_success "Free provider sync: $NOAUTH_ADDED added/attempted, $NOAUTH_SKIPPED already active"
+# ═══════════════════════════════════════════════════════════════
+# Step 4: Compile Routing Combos (API-key + Free No-Auth)
+# ═══════════════════════════════════════════════════════════════
+print_header "Step 4/6 — Compiling & Testing Failover Combos"
 
 CONFIGURED=$(omniroute providers list 2>&1 | grep -E "^[a-f0-9]" | awk '{print $2}' | sort -u)
 
@@ -234,7 +291,7 @@ create_combo() {
         || print_warning "Could not create $NAME"
 }
 
-# 1. Main Execution & Coding Combo
+# 1. Main Execution & Coding Combo (API-key providers + free fallbacks)
 create_combo "combo/execution" "priority" \
     "groq/llama-3.3-70b-versatile" \
     "cerebras/llama3.1-70b" \
@@ -248,6 +305,15 @@ create_combo "combo/execution" "priority" \
     "siliconflow/Qwen/Qwen2.5-Coder-32B-Instruct" \
     "openrouter/meta-llama/llama-3.3-70b-instruct:free" \
     "openrouter/qwen/qwen-2.5-coder-32b-instruct:free" \
+    "pollinations/openai" \
+    "cloudflare/@cf/meta/llama-3.3-70b-instruct-fp8-fast" \
+    "huggingchat/auto" \
+    "huggingface/HuggingFaceH4/zephyr-7b-beta" \
+    "api-airforce/auto" \
+    "llm7/auto" \
+    "aihorde/auto" \
+    "freeinference/auto" \
+    "zcode/auto" \
     "openrouter/auto"
 
 # 2. Deep Reasoning & Architecture Combo
@@ -256,7 +322,12 @@ create_combo "combo/architecture" "priority" \
     "gemini/gemini-2.0-flash-thinking-exp" \
     "groq/deepseek-r1-distill-llama-70b" \
     "nvidia/nemotron-4-340b-instruct" \
-    "openrouter/deepseek/deepseek-r1:free"
+    "openrouter/deepseek/deepseek-r1:free" \
+    "pollinations/openai-large" \
+    "cloudflare/@cf/deepseek-ai/deepseek-r1-distill-qwen-32b" \
+    "huggingface/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B" \
+    "api-airforce/auto" \
+    "llm7/auto"
 
 # 3. High-Speed Low-Cost Combo
 create_combo "combo/low-cost-batch" "priority" \
@@ -265,11 +336,20 @@ create_combo "combo/low-cost-batch" "priority" \
     "sambanova/llama-3.1-8b" \
     "nvidia/llama-3.1-8b-instruct" \
     "cloudflare/@cf/meta/llama-3-8b-instruct" \
-    "openrouter/meta-llama/llama-3.1-8b-instruct:free"
+    "openrouter/meta-llama/llama-3.1-8b-instruct:free" \
+    "pollinations/openai" \
+    "huggingchat/auto" \
+    "aihorde/auto" \
+    "zcode/auto" \
+    "freeinference/auto" \
+    "dgrid/auto"
 
-# Set default active combo
+# Step 5: Set default active combo
 omniroute combo switch combo/execution >/dev/null 2>&1 && print_success "Active default route set to: combo/execution"
 
+# ═══════════════════════════════════════════════════════════════
+# Step 6: Dry-Run Validation
+# ═══════════════════════════════════════════════════════════════
 # Dry-run validation
 echo ""
 print_info "Validating combo/execution route with test prompt..."

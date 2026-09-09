@@ -12,11 +12,9 @@
 #   4. Global installation of OmniRoute and chosen coding agent CLI
 #   5. Configure ~/.omniroute/.env with full encryption keys & settings
 #   6. Scaffolding ~/.omniroute/api-keys.env template (no user registration)
-#   7. Register zero-credential free providers (no keys needed)
-#   8. Build baseline free routing tiers
-#   9. Synthesize Role & Caveman skills + open-agent ecosystem skills
-#  10. Tailor shell environment exports (.zshrc / .bashrc) with modular tagged blocks
-#  11. "What To Do Next" onboarding guide (including backup reminders)
+#   7. Synthesize Role & Caveman skills + open-agent ecosystem skills
+#   8. Tailor shell environment exports (.zshrc / .bashrc) with modular tagged blocks
+#   9. "What To Do Next" onboarding guide (run register-keys.sh for providers)
 # ═══════════════════════════════════════════════════════════════
 
 set +e
@@ -51,13 +49,13 @@ done
 # ═══════════════════════════════════════════════════════════════
 # Step 1: Pre-Install Safety Backup
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 1/10 — Creating Automated Safety Backup"
+print_header "Step 1/9 — Creating Automated Safety Backup"
 bash "$SCRIPT_DIR/backup.sh" --all
 
 # ═══════════════════════════════════════════════════════════════
 # Step 2: Interactive Role & Terminal Agent Selection
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 2/10 — Role & Terminal Agent Selection"
+print_header "Step 2/9 — Role & Terminal Agent Selection"
 
 SELECTED_ROLE="$ARG_ROLE"
 if [ -z "$SELECTED_ROLE" ]; then
@@ -113,7 +111,7 @@ print_success "Selected Terminal Agent: $SELECTED_AGENT"
 # ═══════════════════════════════════════════════════════════════
 # Step 3: Check System Environment
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 3/10 — Check Node.js, npm & Tools"
+print_header "Step 3/9 — Check Node.js, npm & Tools"
 if command -v node >/dev/null 2>&1; then
     print_success "Node.js $(node -v)"
 else
@@ -134,7 +132,7 @@ fi
 # ═══════════════════════════════════════════════════════════════
 # Step 4: Install OmniRoute Core Engine & Terminal Agent CLI
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 4/10 — Check OmniRoute Core & Terminal Agents"
+print_header "Step 4/9 — Check OmniRoute Core & Terminal Agents"
 
 install_global_pkg() {
     local cmd_name="$1"
@@ -192,7 +190,7 @@ esac
 # ═══════════════════════════════════════════════════════════════
 # Step 5: Configure ~/.omniroute and Encryption Key Secrets
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 5/10 — Configure OmniRoute .env & Security Secrets"
+print_header "Step 5/9 — Configure OmniRoute .env & Security Secrets"
 
 mkdir -p "$HOME/.omniroute"
 OMNI_ENV="$HOME/.omniroute/.env"
@@ -216,7 +214,6 @@ if [ ! -f "$OMNI_ENV" ]; then
     ENC_KEY=$(gen_hex_secret 32)
     JWT_SEC=$(gen_base64_secret 48)
     API_SEC=$(gen_hex_secret 32)
-    INIT_PWD=$(gen_hex_secret 16)
 
     cat > "$OMNI_ENV" <<EOF
 # ═══════════════════════════════════════════════════════════════
@@ -228,7 +225,10 @@ STORAGE_ENCRYPTION_KEY=$ENC_KEY
 STORAGE_ENCRYPTION_KEY_VERSION=v1
 JWT_SECRET=$JWT_SEC
 API_KEY_SECRET=$API_SEC
-INITIAL_PASSWORD=$INIT_PWD
+
+# Dashboard / Admin Password
+# Default is CHANGEME — uncomment and set your own password to secure the dashboard
+# INITIAL_PASSWORD=CHANGEME
 
 # Network & Server Port
 PORT=20128
@@ -254,8 +254,10 @@ else
     if ! grep -q "API_KEY_SECRET=" "$OMNI_ENV" 2>/dev/null; then
         echo "API_KEY_SECRET=$(gen_hex_secret 32)" >> "$OMNI_ENV"
     fi
-    if ! grep -q "INITIAL_PASSWORD=" "$OMNI_ENV" 2>/dev/null; then
-        echo "INITIAL_PASSWORD=$(gen_hex_secret 16)" >> "$OMNI_ENV"
+    # INITIAL_PASSWORD: if missing entirely, add the commented default so user knows it exists
+    if ! grep -q "INITIAL_PASSWORD" "$OMNI_ENV" 2>/dev/null; then
+        echo "# Dashboard / Admin Password — uncomment and set your own to secure the dashboard" >> "$OMNI_ENV"
+        echo "# INITIAL_PASSWORD=CHANGEME" >> "$OMNI_ENV"
     fi
     if ! grep -q "REQUIRE_API_KEY=" "$OMNI_ENV" 2>/dev/null; then
         echo "REQUIRE_API_KEY=false" >> "$OMNI_ENV"
@@ -271,7 +273,7 @@ fi
 # ═══════════════════════════════════════════════════════════════
 # Step 6: Setup api-keys.env Template (No Registration Yet)
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 6/10 — Prepare api-keys.env Template"
+print_header "Step 6/9 — Prepare api-keys.env Template"
 
 KEYS_ENV="$HOME/.omniroute/api-keys.env"
 if [ -f "$KEYS_ENV" ]; then
@@ -284,51 +286,14 @@ else
     fi
 fi
 print_info "Note: User API keys are NOT registered during installation."
-print_info "You can add your keys later and register them with ./scripts/register-keys.sh"
+print_info "Run ./scripts/register-keys.sh to register keys AND free no-auth providers."
 
 # ═══════════════════════════════════════════════════════════════
-# Step 7: Register Zero-Auth Free Providers Only
+# Step 7: Inject Skills & Terminal Agent Adapter
+# (formerly Step 9 — re-numbered after removing no-auth from install)
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 7/10 — Register Free Zero-Credential Providers"
 
-print_info "Registering zero-credential free routes (no keys required)..."
-NOAUTH=(aihorde opencode huggingchat firecrawl searxng-search ollama-cloud zcode)
-for p in "${NOAUTH[@]}"; do
-    omniroute providers add "$p" --no-credential --yes >/dev/null 2>&1 \
-        && print_success "$p (free, zero-key)" \
-        || print_info "$p (already active or skipped)"
-done
-
-# ═══════════════════════════════════════════════════════════════
-# Step 8: Build Baseline Free Combos
-# ═══════════════════════════════════════════════════════════════
-print_header "Step 8/10 — Build Baseline Free Routing Tier"
-
-EXISTING_COMBOS=$(omniroute combo list 2>&1 | grep -E "○|●" | awk '{print $2}' | tr -d ' ' || true)
-for c in $EXISTING_COMBOS; do
-    echo y | omniroute combo delete "$c" >/dev/null 2>&1 || true
-done
-
-CONFIGURED=$(omniroute providers list 2>&1 | grep -E "^[a-f0-9]" | awk '{print $2}' | sort -u)
-FREE_ARGS=()
-for p in opencode aihorde huggingchat zcode; do
-    if echo "$CONFIGURED" | grep -qx "$p"; then
-        FREE_ARGS+=(--model "$p/auto")
-    fi
-done
-
-if [ ${#FREE_ARGS[@]} -gt 0 ]; then
-    omniroute combo create "combo/execution" --strategy "round-robin" "${FREE_ARGS[@]}" >/dev/null 2>&1 || true
-    omniroute combo switch "combo/execution" >/dev/null 2>&1 || true
-    print_success "Baseline free combo created and active"
-else
-    print_info "Baseline combo setup complete"
-fi
-
-# ═══════════════════════════════════════════════════════════════
-# Step 9: Inject Skills & Terminal Agent Adapter
-# ═══════════════════════════════════════════════════════════════
-print_header "Step 9/10 — Inject Skills & Agent Adapters"
+print_header "Step 7/9 — Inject Skills & Agent Adapters"
 
 bash "$SCRIPT_DIR/setup-skills.sh" \
     --role "$SELECTED_ROLE" \
@@ -339,9 +304,9 @@ bash "$SCRIPT_DIR/setup-skills.sh" \
 print_success "Configured Caveman optimizer, $SELECTED_ROLE persona, and agent skills"
 
 # ═══════════════════════════════════════════════════════════════
-# Step 10: Shell Environment Configuration (Modular Tagged Blocks)
+# Step 8: Shell Environment Configuration (Modular Tagged Blocks)
 # ═══════════════════════════════════════════════════════════════
-print_header "Step 10/10 — Shell Environment & Tailored Exports"
+print_header "Step 8/9 — Shell Environment & Tailored Exports"
 
 # Detect shell profile
 SHELL_RC="$HOME/.zshrc"
@@ -456,24 +421,27 @@ print_success "Tagged shell exports and noise-filtered telemetry aliases added t
 # ═══════════════════════════════════════════════════════════════
 # Completion & What To Do Next
 # ═══════════════════════════════════════════════════════════════
-print_header "🎉 INSTALLATION COMPLETE!"
+print_header "Step 9/9 — Provider Registration & What To Do Next"
 
 echo -e "Selected Role:   ${BOLD}${SELECTED_ROLE^}${NC}"
 echo -e "Terminal Agent:  ${BOLD}${SELECTED_AGENT^}${NC}"
-echo -e "Zero-Auth Free:  ${BOLD}Active & Ready${NC}"
 echo -e "Safety Backup:   ${BOLD}~/.eleuther-backups/latest/${NC}"
 echo ""
 echo -e "${BOLD}${GREEN}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${BOLD}${GREEN} 🚀 WHAT TO DO NEXT${NC}"
+echo -e "${BOLD}${GREEN} 🎉 INSTALLATION COMPLETE — WHAT TO DO NEXT${NC}"
 echo -e "${BOLD}${GREEN}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
-echo -e "${BOLD}1. (Optional) Add your API Keys for Premium / High-Rate Models:${NC}"
-echo -e "   Open your keys file:  ${CYAN}nano ~/.omniroute/api-keys.env${NC}"
-echo -e "   Paste any keys you have (Gemini, Groq, DeepSeek, etc.) and save."
+echo -e "${BOLD}1. Register Free No-Auth Providers + Your API Keys:${NC}"
+echo -e "   ${CYAN}./scripts/register-keys.sh${NC}"
+echo -e "   This will:"
+echo -e "     • Register ALL free/no-auth providers automatically (Pollinations, Cloudflare, etc.)"
+echo -e "     • Register any API keys you've added to ~/.omniroute/api-keys.env"
+echo -e "     • Build intelligent failover routing combos across all providers"
 echo ""
-echo -e "${BOLD}2. Register Your Keys & Build Intelligent Failover Combos:${NC}"
-echo -e "   Run the combo builder:  ${CYAN}./scripts/register-keys.sh${NC}"
-echo -e "   ${YELLOW}(If you only want zero-credential free routes, you can skip step 1 & 2)${NC}"
+echo -e "${BOLD}2. (Optional) Add Your API Keys for Even More Providers:${NC}"
+echo -e "   Open:  ${CYAN}nano ~/.omniroute/api-keys.env${NC}"
+echo -e "   Paste any keys you have (Gemini, Groq, DeepSeek, OpenRouter, etc.) and save."
+echo -e "   Then re-run:  ${CYAN}./scripts/register-keys.sh${NC}"
 echo ""
 echo -e "${BOLD}3. Reload Your Shell Profile:${NC}"
 echo -e "   ${CYAN}source $SHELL_RC${NC}"
