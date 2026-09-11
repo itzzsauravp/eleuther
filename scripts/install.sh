@@ -204,6 +204,47 @@ case "$SELECTED_AGENT" in
         ;;
     codex)
         install_global_pkg "codex" "@openai/codex"
+        # Write ~/.codex/config.toml to route codex through OmniRoute
+        # codex requires wire_api=responses for the OpenAI Responses API format
+        print_info "Configuring Codex CLI to use OmniRoute provider..."
+        mkdir -p "$HOME/.codex"
+        CODEX_CFG="$HOME/.codex/config.toml"
+        if [ ! -f "$CODEX_CFG" ]; then
+            cat > "$CODEX_CFG" << 'CODEX_CONFIG_EOF'
+# ~/.codex/config.toml
+# OmniRoute integration for Codex CLI — managed by Eleuther installer
+model          = "auto/coding"
+model_provider = "omniroute"
+
+[model_providers.omniroute]
+name     = "OmniRoute"
+base_url = "http://localhost:20128/v1"
+env_key  = "OMNIROUTE_API_KEY"
+wire_api = "responses"
+requires_openai_auth = false
+CODEX_CONFIG_EOF
+            print_success "Created ~/.codex/config.toml with OmniRoute provider."
+        else
+            # Patch existing config if omniroute provider block is missing
+            if ! grep -q "model_providers.omniroute" "$CODEX_CFG" 2>/dev/null; then
+                cat >> "$CODEX_CFG" << 'CODEX_PATCH_EOF'
+
+# OmniRoute provider — added by Eleuther installer
+[model_providers.omniroute]
+name     = "OmniRoute"
+base_url = "http://localhost:20128/v1"
+env_key  = "OMNIROUTE_API_KEY"
+wire_api = "responses"
+requires_openai_auth = false
+CODEX_PATCH_EOF
+                if ! grep -q "model_provider" "$CODEX_CFG" 2>/dev/null; then
+                    echo 'model_provider = "omniroute"' >> "$CODEX_CFG"
+                fi
+                print_success "Patched ~/.codex/config.toml with OmniRoute provider."
+            else
+                print_success "~/.codex/config.toml already has OmniRoute provider."
+            fi
+        fi
         ;;
     opencode)
         install_global_pkg "opencode" "opencode-ai"
@@ -212,11 +253,37 @@ case "$SELECTED_AGENT" in
         if command -v aider >/dev/null 2>&1; then
             print_success "aider is already installed."
         else
-            print_info "Checking python3 pip for aider-chat..."
-            if command -v pip3 >/dev/null 2>&1 && pip3 install aider-chat >/dev/null 2>&1; then
-                print_success "aider installed successfully via pip3."
-            else
-                install_global_pkg "aider" "aider-chat"
+            AIDER_INSTALLED=false
+            # Try uv tool install first (fastest, works without pip3/system python)
+            if command -v uv >/dev/null 2>&1; then
+                print_info "Installing aider-chat via uv tool install..."
+                if uv tool install aider-chat --python 3.12 --quiet 2>/dev/null; then
+                    UV_TOOL_BIN="$(uv tool dir 2>/dev/null)/bin"
+                    [ -d "$UV_TOOL_BIN" ] && export PATH="$UV_TOOL_BIN:$PATH"
+                    hash -r 2>/dev/null || true
+                    AIDER_INSTALLED=true
+                    print_success "aider installed successfully via uv."
+                fi
+            fi
+            # Fallback: pip3
+            if [ "$AIDER_INSTALLED" = false ] && command -v pip3 >/dev/null 2>&1; then
+                print_info "Installing aider-chat via pip3..."
+                if pip3 install aider-chat --quiet 2>/dev/null; then
+                    AIDER_INSTALLED=true
+                    print_success "aider installed successfully via pip3."
+                fi
+            fi
+            # Fallback: pipx
+            if [ "$AIDER_INSTALLED" = false ] && command -v pipx >/dev/null 2>&1; then
+                print_info "Installing aider-chat via pipx..."
+                if pipx install aider-chat 2>/dev/null; then
+                    AIDER_INSTALLED=true
+                    print_success "aider installed successfully via pipx."
+                fi
+            fi
+            # Final fallback hint
+            if [ "$AIDER_INSTALLED" = false ]; then
+                print_warning "Could not auto-install aider. Please run: uv tool install aider-chat"
             fi
         fi
         ;;
@@ -296,6 +363,9 @@ else
     fi
     if ! grep -q "REQUIRE_API_KEY=" "$OMNI_ENV" 2>/dev/null; then
         echo "REQUIRE_API_KEY=false" >> "$OMNI_ENV"
+    fi
+    if ! grep -q "OMNIROUTE_API_KEY=" "$OMNI_ENV" 2>/dev/null; then
+        echo "OMNIROUTE_API_KEY=omni-route-key" >> "$OMNI_ENV"
     fi
     if ! grep -q "PORT=" "$OMNI_ENV" 2>/dev/null; then
         echo "PORT=20128" >> "$OMNI_ENV"
@@ -444,7 +514,10 @@ EOF
         cat >> "$SHELL_RC" <<'EOF'
 
 # <<< Eleuther: Agent codex <<<
-# OpenAI Codex / CLI Local Proxy Configuration
+# OpenAI Codex / CLI OmniRoute Configuration
+# codex reads ~/.codex/config.toml for provider routing via OMNIROUTE_API_KEY
+export OMNIROUTE_API_KEY="omni-route-key"
+# Fallback env vars for other tools using the same proxy
 export OPENAI_BASE_URL="http://localhost:20128/v1"
 export OPENAI_API_BASE="http://localhost:20128/v1"
 export OPENAI_API_KEY="omni-route-key"
@@ -459,6 +532,7 @@ EOF
 export OPENCODE_API_BASE="http://localhost:20128/v1"
 export OPENAI_BASE_URL="http://localhost:20128/v1"
 export OPENAI_API_KEY="omni-route-key"
+export OMNIROUTE_API_KEY="omni-route-key"
 # >>> Eleuther: Agent opencode >>>
 EOF
         ;;
@@ -466,11 +540,15 @@ EOF
         cat >> "$SHELL_RC" <<'EOF'
 
 # <<< Eleuther: Agent aider <<<
-# Aider CLI Local Proxy Configuration
+# Aider CLI OmniRoute Configuration
 export OPENAI_API_BASE="http://localhost:20128/v1"
 export OPENAI_API_KEY="omni-route-key"
+export OPENAI_BASE_URL="http://localhost:20128/v1"
 export AIDER_MODEL="openai/auto/coding"
 export AIDER_OPENAI_API_BASE="http://localhost:20128/v1"
+export AIDER_OPENAI_API_KEY="omni-route-key"
+# uv tool bin — ensures aider installed via uv is on PATH
+export PATH="$HOME/.local/bin:$PATH"
 # >>> Eleuther: Agent aider >>>
 EOF
         ;;
@@ -510,6 +588,10 @@ if ! omniroute health >/dev/null 2>&1; then
         done
         if [ "$SERVER_READY" -eq 1 ]; then
             print_success "OmniRoute background server is running and ready!"
+            if [ "$SELECTED_AGENT" = "opencode" ]; then
+                omniroute setup-opencode --api-key omni-route-key >/dev/null 2>&1 || true
+                print_success "Configured OpenCode with OmniRoute provider and models."
+            fi
         else
             print_warning "Server starting in background. Verify with: omniroute health"
         fi
