@@ -266,10 +266,27 @@ fi
 
 # 6. Global npm packages
 print_header "Global Packages"
-if command -v omniroute >/dev/null 2>&1; then
+
+# Invalidate shell command cache (universal in bash/zsh)
+hash -r 2>/dev/null || true
+
+# Universal check: standard npm global check OR executable in PATH
+if npm list -g --depth=0 omniroute >/dev/null 2>&1 || command -v omniroute >/dev/null 2>&1; then
     if ask_confirm "Uninstall OmniRoute global npm package (npm uninstall -g omniroute)?" false; then
         print_info "Uninstalling omniroute..."
         npm uninstall -g omniroute 2>/dev/null || sudo npm uninstall -g omniroute 2>/dev/null || true
+
+        # Clean up any leftover binary in npm prefix bin if npm left an orphan
+        NPM_BIN="$(npm prefix -g 2>/dev/null)/bin/omniroute"
+        ([ -f "$NPM_BIN" ] || [ -L "$NPM_BIN" ]) && rm -f "$NPM_BIN" 2>/dev/null || true
+
+        # Optional cleanups for environments with shims (mise/asdf), no-op on normal machines
+        command -v mise >/dev/null 2>&1 && (mise reshim 2>/dev/null || rm -f "$HOME/.local/share/mise/shims/omniroute" 2>/dev/null || true)
+        command -v asdf >/dev/null 2>&1 && asdf reshim 2>/dev/null || true
+
+        # Invalidate shell command lookup cache for this session
+        hash -r 2>/dev/null || true
+
         print_success "OmniRoute uninstalled"
     fi
 fi

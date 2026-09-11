@@ -129,6 +129,12 @@ else
     exit 1
 fi
 
+# Ensure npm global bin directory is in PATH across all platforms (standard Node, nvm, fnm, brew, etc.)
+NPM_GLOBAL_BIN="$(npm prefix -g 2>/dev/null)/bin"
+if [ -n "$NPM_GLOBAL_BIN" ] && [ -d "$NPM_GLOBAL_BIN" ] && [[ ":$PATH:" != *":$NPM_GLOBAL_BIN:"* ]]; then
+    export PATH="$NPM_GLOBAL_BIN:$PATH"
+fi
+
 # ═══════════════════════════════════════════════════════════════
 # Step 4: Install OmniRoute Core Engine & Terminal Agent CLI
 # ═══════════════════════════════════════════════════════════════
@@ -138,13 +144,37 @@ install_global_pkg() {
     local cmd_name="$1"
     local npm_pkg="$2"
 
-    if command -v "$cmd_name" >/dev/null 2>&1; then
-        print_success "$cmd_name is already installed."
+    # Invalidate shell command cache (standard built-in in bash/zsh on all platforms)
+    hash -r 2>/dev/null || true
+    # Non-intrusive hook for environments with shims (mise/asdf), no-op on normal machines
+    command -v mise >/dev/null 2>&1 && mise reshim 2>/dev/null || true
+    command -v asdf >/dev/null 2>&1 && asdf reshim 2>/dev/null || true
+
+    # Universal Check: verify the binary is installed AND actually executable
+    if command -v "$cmd_name" >/dev/null 2>&1 && ("$cmd_name" --version >/dev/null 2>&1 || "$cmd_name" -v >/dev/null 2>&1 || "$cmd_name" --help >/dev/null 2>&1); then
+        print_success "$cmd_name is already installed and functional."
         return 0
+    fi
+
+    # Fallback Check: does standard npm report it installed globally?
+    if npm list -g --depth=0 "$npm_pkg" >/dev/null 2>&1; then
+        local bin_dir="$(npm prefix -g 2>/dev/null)/bin"
+        [ -d "$bin_dir" ] && export PATH="$bin_dir:$PATH"
+        hash -r 2>/dev/null || true
+        if command -v "$cmd_name" >/dev/null 2>&1; then
+            print_success "$cmd_name is already installed."
+            return 0
+        fi
     fi
 
     print_info "Installing $cmd_name globally (npm install -g $npm_pkg)..."
     if npm install -g "$npm_pkg" >/dev/null 2>&1; then
+        local bin_dir="$(npm prefix -g 2>/dev/null)/bin"
+        [ -d "$bin_dir" ] && export PATH="$bin_dir:$PATH"
+        hash -r 2>/dev/null || true
+        command -v mise >/dev/null 2>&1 && mise reshim 2>/dev/null || true
+        command -v asdf >/dev/null 2>&1 && asdf reshim 2>/dev/null || true
+
         if command -v "$cmd_name" >/dev/null 2>&1; then
             print_success "$cmd_name installed successfully."
             return 0
@@ -153,6 +183,11 @@ install_global_pkg() {
 
     print_warning "$cmd_name standard install failed or not in PATH. Trying with sudo..."
     if sudo npm install -g "$npm_pkg" >/dev/null 2>&1; then
+        local bin_dir="$(npm prefix -g 2>/dev/null)/bin"
+        [ -d "$bin_dir" ] && export PATH="$bin_dir:$PATH"
+        hash -r 2>/dev/null || true
+        command -v mise >/dev/null 2>&1 && mise reshim 2>/dev/null || true
+        command -v asdf >/dev/null 2>&1 && asdf reshim 2>/dev/null || true
         print_success "$cmd_name installed successfully (sudo)."
     else
         print_warning "Could not auto-install $cmd_name. You can install it manually: npm install -g $npm_pkg"

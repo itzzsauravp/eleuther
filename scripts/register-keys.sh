@@ -27,6 +27,24 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 ENV_FILE="${1:-$HOME/.omniroute/api-keys.env}"
 
+# Ensure npm global bin directory is in PATH across all platforms (standard Node, nvm, fnm, brew, etc.)
+NPM_GLOBAL_BIN="$(npm prefix -g 2>/dev/null)/bin"
+if [ -n "$NPM_GLOBAL_BIN" ] && [ -d "$NPM_GLOBAL_BIN" ] && [[ ":$PATH:" != *":$NPM_GLOBAL_BIN:"* ]]; then
+    export PATH="$NPM_GLOBAL_BIN:$PATH"
+fi
+
+# Reset command lookup cache
+hash -r 2>/dev/null || true
+command -v mise >/dev/null 2>&1 && mise reshim 2>/dev/null || true
+command -v asdf >/dev/null 2>&1 && asdf reshim 2>/dev/null || true
+
+# Universal Check: verify OmniRoute CLI exists AND can run
+if ! command -v omniroute >/dev/null 2>&1 || ! omniroute --version >/dev/null 2>&1; then
+    print_error "OmniRoute CLI is not installed or not working properly."
+    echo -e "Please install it by running: ${CYAN}npm install -g omniroute${NC} or ${CYAN}./scripts/install.sh${NC}"
+    exit 1
+fi
+
 # Check file existence
 if [ ! -f "$ENV_FILE" ]; then
     print_error "API keys file not found: $ENV_FILE"
