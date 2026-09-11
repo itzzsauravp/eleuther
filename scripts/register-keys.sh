@@ -371,26 +371,25 @@ create_combo() {
 # 1. Main Execution & Coding Combo (API-key providers + free fallbacks)
 create_combo "combo/execution" "priority" \
     "groq/llama-3.3-70b-versatile" \
+    "mistral/codestral-latest" \
     "cerebras/llama3.1-70b" \
     "sambanova/llama-3.1-70b" \
-    "deepseek/deepseek-chat" \
-    "mistral/codestral-latest" \
-    "gemini/gemini-2.0-flash" \
     "nvidia/llama-3.1-70b-instruct" \
-    "cohere/command-r-plus" \
-    "siliconflow/deepseek-ai/DeepSeek-V3" \
-    "siliconflow/Qwen/Qwen2.5-Coder-32B-Instruct" \
-    "openrouter/meta-llama/llama-3.3-70b-instruct:free" \
-    "openrouter/qwen/qwen-2.5-coder-32b-instruct:free" \
+    "gemini/gemini-2.0-flash" \
+    "cohere/command-r-plus-08-2024" \
+    "openrouter/cohere/north-mini-code:free" \
+    "openrouter/google/gemma-4-31b-it:free" \
+    "openrouter/nex-agi/nex-n2.5-pro:free" \
+    "openrouter/liquid/lfm-2.5-2.6b:free" \
+    "openrouter/inclusionai/ling-3.0-flash-vl:free" \
+    "openrouter/dots-studio/dots-3-note-preview:free" \
     "pollinations/openai" \
-    "cloudflare/@cf/meta/llama-3.3-70b-instruct-fp8-fast" \
-    "huggingchat/auto" \
-    "huggingface/HuggingFaceH4/zephyr-7b-beta" \
+    "cloudflare-ai/@cf/meta/llama-3.3-70b-instruct-fp8-fast" \
     "api-airforce/auto" \
     "llm7/auto" \
-    "aihorde/auto" \
     "freeinference/auto" \
     "zcode/auto" \
+    "aihorde/koboldcpp/Mistral-Nemo-12B-Instruct" \
     "openrouter/auto"
 
 # 2. Deep Reasoning & Architecture Combo
@@ -399,10 +398,14 @@ create_combo "combo/architecture" "priority" \
     "gemini/gemini-2.0-flash-thinking-exp" \
     "groq/deepseek-r1-distill-llama-70b" \
     "nvidia/nemotron-4-340b-instruct" \
+    "mistral/mistral-large-latest" \
+    "cohere/command-r-plus-08-2024" \
+    "openrouter/nex-agi/nex-n2.5-pro:free" \
+    "openrouter/google/gemma-4-31b-it:free" \
     "openrouter/deepseek/deepseek-r1:free" \
+    "openrouter/inclusionai/ling-3.0-flash-vl:free" \
     "pollinations/openai-large" \
-    "cloudflare/@cf/deepseek-ai/deepseek-r1-distill-qwen-32b" \
-    "huggingface/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B" \
+    "cloudflare-ai/@cf/deepseek-ai/deepseek-r1-distill-qwen-32b" \
     "api-airforce/auto" \
     "llm7/auto"
 
@@ -412,12 +415,15 @@ create_combo "combo/low-cost-batch" "priority" \
     "groq/llama-3.1-8b-instant" \
     "sambanova/llama-3.1-8b" \
     "nvidia/llama-3.1-8b-instruct" \
-    "cloudflare/@cf/meta/llama-3-8b-instruct" \
-    "openrouter/meta-llama/llama-3.1-8b-instruct:free" \
+    "mistral/codestral-latest" \
+    "openrouter/nex-agi/nex-n2.5-mini:free" \
+    "openrouter/liquid/lfm-2.5-2.6b:free" \
+    "openrouter/cohere/north-mini-code:free" \
+    "openrouter/dots-studio/dots-3-note-preview:free" \
+    "cloudflare-ai/@cf/meta/llama-3-8b-instruct" \
     "pollinations/openai" \
     "huggingchat/auto" \
-    "aihorde/auto" \
-    "zcode/auto" \
+    "aihorde/koboldcpp/Mistral-Nemo-12B-Instruct" \
     "freeinference/auto" \
     "dgrid/auto"
 
