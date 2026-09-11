@@ -31,7 +31,17 @@ cd eleuther
 
 Follow the interactive prompts to pick your role and preferred terminal agent.
 
-### 2. (Optional) Add Your API Keys
+### 2. Start the OmniRoute Local Server
+
+> **Important**: OmniRoute's server daemon must be active before registering providers and combos.
+
+```bash
+omniroute serve --daemon
+```
+
+*(Verify anytime with: `omniroute health`)*
+
+### 3. (Optional) Add Your API Keys
 
 If you want to use paid or higher-tier models (Gemini, Groq, DeepSeek, Cerebras, OpenRouter, etc.):
 
@@ -41,24 +51,21 @@ nano ~/.omniroute/api-keys.env
 
 Paste your API keys and save (`Ctrl+O`, `Enter`, `Ctrl+X`).
 
-### 3. Register Keys & Free Providers
+### 4. Register Keys & Free Providers
 
 ```bash
 ./scripts/register-keys.sh
 ```
 
-This validates your API keys, registers all **free no-auth providers automatically** (no key needed), and builds intelligent failover combos (`combo/execution`, `combo/architecture`, `combo/low-cost-batch`).
+This validates and registers your API keys, registers all **free no-auth providers automatically** (no key needed), and builds intelligent failover combos (`combo/execution`, `combo/architecture`, `combo/low-cost-batch`).
 
-### 4. Reload Shell & Start Proxy
+### 5. Reload Shell & Launch Your Agent
 
 ```bash
 source ~/.bashrc   # or source ~/.zshrc
-omniroute serve &
 ```
 
-### 5. Launch Your Agent
-
-Run your chosen agent CLI directly from your terminal:
+Launch your chosen agent CLI directly from your terminal:
 
 - **Claude Code**: `claude`
 - **Codex**: `codex`

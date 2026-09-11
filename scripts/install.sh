@@ -487,27 +487,61 @@ echo -e "Selected Role:   ${BOLD}${SELECTED_ROLE^}${NC}"
 echo -e "Terminal Agent:  ${BOLD}${SELECTED_AGENT^}${NC}"
 echo -e "Safety Backup:   ${BOLD}~/.eleuther-backups/latest/${NC}"
 echo ""
+
+# Ask user to run server before registering providers
+echo -e "${BOLD}${CYAN}───────────────────────────────────────────────────────────────${NC}"
+echo -e "${BOLD}OmniRoute Local Server Setup${NC}"
+echo -e "OmniRoute requires its server daemon to be running before registering providers."
+echo -e "${BOLD}${CYAN}───────────────────────────────────────────────────────────────${NC}"
+if ! omniroute health >/dev/null 2>&1; then
+    echo ""
+    read -rp "Would you like to start the OmniRoute background server now? [Y/n]: " START_SERVER_CHOICE
+    START_SERVER_CHOICE="${START_SERVER_CHOICE:-Y}"
+    if [[ "$START_SERVER_CHOICE" =~ ^[Yy]$ ]]; then
+        print_info "Starting OmniRoute daemon (omniroute serve --daemon)..."
+        omniroute serve --daemon >/dev/null 2>&1 || true
+        SERVER_READY=0
+        for _ in {1..15}; do
+            if omniroute health >/dev/null 2>&1; then
+                SERVER_READY=1
+                break
+            fi
+            sleep 1
+        done
+        if [ "$SERVER_READY" -eq 1 ]; then
+            print_success "OmniRoute background server is running and ready!"
+        else
+            print_warning "Server starting in background. Verify with: omniroute health"
+        fi
+    else
+        print_warning "Skipped starting server. Please run '${CYAN}omniroute serve --daemon${NC}' before registering keys!"
+    fi
+else
+    print_success "OmniRoute background server is already running."
+fi
+echo ""
+
 echo -e "${BOLD}${GREEN}═══════════════════════════════════════════════════════════════${NC}"
 echo -e "${BOLD}${GREEN} 🎉 INSTALLATION COMPLETE — WHAT TO DO NEXT${NC}"
 echo -e "${BOLD}${GREEN}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
-echo -e "${BOLD}1. Register Free No-Auth Providers + Your API Keys:${NC}"
+echo -e "${BOLD}1. Ensure OmniRoute Local Server is Running:${NC}"
+echo -e "   ${CYAN}omniroute serve --daemon${NC}"
+echo -e "   (The local proxy server must be active to register providers and route requests)"
+echo ""
+echo -e "${BOLD}2. (Optional) Add Your API Keys for More Providers:${NC}"
+echo -e "   Open:  ${CYAN}nano ~/.omniroute/api-keys.env${NC}"
+echo -e "   Paste any keys you have (Gemini, Groq, DeepSeek, OpenRouter, etc.) and save."
+echo ""
+echo -e "${BOLD}3. Register Free Providers + Your API Keys:${NC}"
 echo -e "   ${CYAN}./scripts/register-keys.sh${NC}"
 echo -e "   This will:"
 echo -e "     • Register ALL free/no-auth providers automatically (Pollinations, Cloudflare, etc.)"
 echo -e "     • Register any API keys you've added to ~/.omniroute/api-keys.env"
 echo -e "     • Build intelligent failover routing combos across all providers"
 echo ""
-echo -e "${BOLD}2. (Optional) Add Your API Keys for Even More Providers:${NC}"
-echo -e "   Open:  ${CYAN}nano ~/.omniroute/api-keys.env${NC}"
-echo -e "   Paste any keys you have (Gemini, Groq, DeepSeek, OpenRouter, etc.) and save."
-echo -e "   Then re-run:  ${CYAN}./scripts/register-keys.sh${NC}"
-echo ""
-echo -e "${BOLD}3. Reload Your Shell Profile:${NC}"
+echo -e "${BOLD}4. Reload Your Shell Profile:${NC}"
 echo -e "   ${CYAN}source $SHELL_RC${NC}"
-echo ""
-echo -e "${BOLD}4. Start the OmniRoute Local Proxy:${NC}"
-echo -e "   ${CYAN}omniroute serve &${NC}"
 echo ""
 echo -e "${BOLD}5. Launch Your Terminal Coding Agent:${NC}"
 case "$SELECTED_AGENT" in
