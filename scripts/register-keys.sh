@@ -45,6 +45,34 @@ if ! command -v omniroute >/dev/null 2>&1 || ! omniroute --version >/dev/null 2>
     exit 1
 fi
 
+# Ensure OmniRoute server daemon is running (providers and combos require active local server)
+ensure_server_running() {
+    if omniroute health >/dev/null 2>&1; then
+        return 0
+    fi
+
+    print_info "OmniRoute server is not running. Starting background daemon (omniroute serve --daemon)..."
+    omniroute serve --daemon >/dev/null 2>&1 || true
+
+    local MAX_WAIT_SECONDS=30
+    local elapsed=0
+    print_info "Waiting for OmniRoute daemon to initialize (up to ${MAX_WAIT_SECONDS}s timeout)..."
+    while [ $elapsed -lt $MAX_WAIT_SECONDS ]; do
+        if omniroute health >/dev/null 2>&1; then
+            print_success "OmniRoute background server is ready (${elapsed}s elapsed)."
+            return 0
+        fi
+        sleep 1
+        ((elapsed++))
+    done
+
+    print_error "Could not connect to OmniRoute server after ${MAX_WAIT_SECONDS} seconds."
+    echo -e "Please start the server manually with: ${CYAN}omniroute serve --daemon${NC} or ${CYAN}omniroute serve${NC}"
+    exit 1
+}
+
+ensure_server_running
+
 # Check file existence
 if [ ! -f "$ENV_FILE" ]; then
     print_error "API keys file not found: $ENV_FILE"
@@ -151,6 +179,10 @@ while IFS= read -r line || [ -n "$line" ]; do
         [[ "$VALUE" == *"enter_"* ]] && continue
 
         PROVIDER_ID="${PROVIDER_MAP[$KEY]}"
+        if [ -z "$PROVIDER_ID" ] && [[ "$KEY" =~ ^(.*)_API_KEY$ ]]; then
+            # Dynamic fallback: scale to any provider key (e.g. CUSTOM_API_KEY -> custom)
+            PROVIDER_ID="$(echo "${BASH_REMATCH[1]}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')"
+        fi
         if [ -n "$PROVIDER_ID" ]; then
             VALID_KEYS+=("$KEY=$VALUE")
             VALID_PROVIDERS+=("$PROVIDER_ID")
@@ -183,13 +215,20 @@ print_header "Step 2/6 — Registering API Key Providers in OmniRoute"
 
 ADDED=0; SKIPPED=0; FAILED=0
 
+TOTAL_KEYS=${#VALID_KEYS[@]}
+INDEX=0
+
 for pair in "${VALID_KEYS[@]}"; do
+    ((INDEX++))
     KEY="${pair%%=*}"
     VALUE="${pair#*=}"
     PROVIDER_ID="${PROVIDER_MAP[$KEY]}"
+    if [ -z "$PROVIDER_ID" ] && [[ "$KEY" =~ ^(.*)_API_KEY$ ]]; then
+        PROVIDER_ID="$(echo "${BASH_REMATCH[1]}" | tr '[:upper:]' '[:lower:]' | tr '_' '-')"
+    fi
 
-    echo -n "  Registering $PROVIDER_ID... "
-    OUTPUT=$(omniroute providers add "$PROVIDER_ID" --credential "$VALUE" --yes 2>&1 || true)
+    echo -n "  [$INDEX/$TOTAL_KEYS] Registering $PROVIDER_ID... "
+    OUTPUT=$(timeout 25 omniroute providers add "$PROVIDER_ID" --credential "$VALUE" --yes 2>&1 || true)
     if echo "$OUTPUT" | grep -qi "added\|updated"; then
         print_success "registered"
         ((ADDED++))
@@ -244,10 +283,14 @@ NOAUTH_PROVIDERS=(
 NOAUTH_ADDED=0
 NOAUTH_SKIPPED=0
 
+NOAUTH_TOTAL=${#NOAUTH_PROVIDERS[@]}
+NOAUTH_INDEX=0
+
 for provider in "${NOAUTH_PROVIDERS[@]}"; do
+    ((NOAUTH_INDEX++))
     # Strip inline comment from provider name
     PNAME="${provider%%[[:space:]]*}"
-    echo -n "  Adding $PNAME (no-auth)... "
+    echo -n "  [$NOAUTH_INDEX/$NOAUTH_TOTAL] Adding $PNAME (no-auth)... "
     OUTPUT=$(omniroute providers add "$PNAME" --no-credential --yes 2>&1 || true)
     if echo "$OUTPUT" | grep -qi "added\|updated\|registered"; then
         print_success "registered"
@@ -384,7 +427,7 @@ echo -e "${GREEN}${BOLD}══════════════════�
 echo -e "${GREEN}${BOLD} 🎉 API KEYS REGISTERED & COMBOS READY!${NC}"
 echo -e "${GREEN}${BOLD}═══════════════════════════════════════════════════════════════${NC}"
 echo -e "Active providers and combos are ready to serve requests."
-echo -e "Start the local proxy if not running:  ${CYAN}omniroute serve &${NC}"
+echo -e "Start the local proxy if not running:  ${CYAN}omniroute serve --daemon${NC}"
 echo -e "Launch your terminal agent:"
 echo -e "  - Claude Code:  ${CYAN}claude${NC}"
 echo -e "  - Codex:        ${CYAN}codex${NC}"
