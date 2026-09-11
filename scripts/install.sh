@@ -206,7 +206,7 @@ case "$SELECTED_AGENT" in
         install_global_pkg "codex" "@openai/codex"
         ;;
     opencode)
-        install_global_pkg "opencode" "@opencode/cli"
+        install_global_pkg "opencode" "opencode-ai"
         ;;
     aider)
         if command -v aider >/dev/null 2>&1; then
@@ -278,7 +278,7 @@ EOF
     print_success "Created ~/.omniroute/.env with full encryption secrets & proxy authorization"
 else
     print_info "Checking existing ~/.omniroute/.env for missing required secrets..."
-    
+
     if ! grep -q "STORAGE_ENCRYPTION_KEY=" "$OMNI_ENV" 2>/dev/null; then
         echo "STORAGE_ENCRYPTION_KEY=$(gen_hex_secret 32)" >> "$OMNI_ENV"
         echo "STORAGE_ENCRYPTION_KEY_VERSION=v1" >> "$OMNI_ENV"
@@ -343,13 +343,38 @@ print_success "Configured Caveman optimizer, $SELECTED_ROLE persona, and agent s
 # ═══════════════════════════════════════════════════════════════
 print_header "Step 8/9 — Shell Environment & Tailored Exports"
 
-# Detect shell profile
+# Detect shell profile compatible with macOS and all Linux distributions
 SHELL_RC="$HOME/.zshrc"
-if [ -n "$BASH_VERSION" ] || [ ! -f "$HOME/.zshrc" ]; then
-    if [ -f "$HOME/.bashrc" ]; then
-        SHELL_RC="$HOME/.bashrc"
-    elif [ -f "$HOME/.bash_profile" ]; then
-        SHELL_RC="$HOME/.bash_profile"
+if [[ "$OSTYPE" == "darwin"* ]] || [ "$(uname 2>/dev/null)" = "Darwin" ]; then
+    # macOS defaults to zsh (~/.zshrc); create it if missing
+    SHELL_RC="$HOME/.zshrc"
+    [ ! -f "$SHELL_RC" ] && touch "$SHELL_RC" 2>/dev/null || true
+else
+    # Linux / other environments: respect user $SHELL and existing profile files
+    if [[ "$SHELL" == */zsh ]]; then
+        SHELL_RC="$HOME/.zshrc"
+        [ ! -f "$SHELL_RC" ] && touch "$SHELL_RC" 2>/dev/null || true
+    elif [[ "$SHELL" == */bash ]]; then
+        if [ -f "$HOME/.bashrc" ]; then
+            SHELL_RC="$HOME/.bashrc"
+        elif [ -f "$HOME/.bash_profile" ]; then
+            SHELL_RC="$HOME/.bash_profile"
+        else
+            SHELL_RC="$HOME/.bashrc"
+            touch "$SHELL_RC" 2>/dev/null || true
+        fi
+    else
+        # Generic fallback for Linux / other shells
+        if [ -f "$HOME/.zshrc" ]; then
+            SHELL_RC="$HOME/.zshrc"
+        elif [ -f "$HOME/.bashrc" ]; then
+            SHELL_RC="$HOME/.bashrc"
+        elif [ -f "$HOME/.bash_profile" ]; then
+            SHELL_RC="$HOME/.bash_profile"
+        else
+            SHELL_RC="$HOME/.bashrc"
+            touch "$SHELL_RC" 2>/dev/null || true
+        fi
     fi
 fi
 
