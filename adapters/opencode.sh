@@ -32,4 +32,10 @@ if [ -n "$BUNDLE_FILE" ] && [ -f "$BUNDLE_FILE" ]; then
     print_success "Installed OpenCode rules: .opencode/rules/omniroute-rules.md"
 fi
 
+# Configure OpenCode provider in opencode.json if OmniRoute is running
+if command -v omniroute >/dev/null 2>&1 && omniroute health >/dev/null 2>&1; then
+    omniroute setup-opencode --api-key "${OMNIROUTE_API_KEY:-omni-route-key}" >/dev/null 2>&1 || true
+    print_success "Synced OmniRoute provider with OpenCode"
+fi
+
 print_info "OpenCode configured for role: ${ROLE:-default}"

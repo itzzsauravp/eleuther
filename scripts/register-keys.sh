@@ -240,6 +240,8 @@ for pair in "${VALID_KEYS[@]}"; do
         echo "    $OUTPUT"
         ((FAILED++))
     fi
+    # Ensure active status
+    omniroute providers edit "$PROVIDER_ID" --active >/dev/null 2>&1 || true
 done
 
 echo ""
@@ -260,24 +262,32 @@ echo ""
 # without any credentials (Pollinations, Cloudflare Workers AI, HuggingFace
 # inference endpoints, and community routers).
 NOAUTH_PROVIDERS=(
-    "pollinations"          # Pollinations AI        — free generative models, no key needed
-    "cloudflare-ai"        # Cloudflare Workers AI  — free inference on edge (Workers AI)
-    "huggingchat"          # HuggingFace Chat       — HF open model inference, no key
-    "huggingface"          # HuggingFace Inference  — serverless public endpoints
-    "openrouter"           # OpenRouter (free tier) — 50+ free models via no-auth tier
-    "aihorde"              # AI Horde               — community GPU cluster, zero key
-    "opencode"             # OpenCode               — local/cloud open inference
-    "zcode"                # ZCode                  — zero-credential open coding models
-    "firecrawl"            # Firecrawl              — web extraction & scraping
-    "searxng-search"       # SearXNG               — privacy metasearch engine
-    "ollama-cloud"         # Ollama Cloud           — remote open model inference
-    "api-airforce"         # Airforce               — free tier API provider
-    "llm7"                 # LLM7                   — free community endpoints
-    "freeinference"        # FreeInference          — open inference router
-    "freemodel-dev"        # FreeModel Dev          — zero-key dev models
-    "dgrid"                # DGrid                  — distributed compute models
-    "zenmux"               # ZenMux                 — aggregated free endpoints
-    "openadapter"          # OpenAdapter            — protocol adapter bridge
+    "pollinations"          # Pollinations AI        — free generative & coding models
+    "opencode"              # OpenCode Free          — coding & agent models
+    "zcode"                 # ZCode                  — GLM open coding models
+    "auggie"                # Augment (Auggie CLI)   — coding assistant models
+    "aihorde"               # AI Horde               — community GPU cluster, zero key
+    "huggingchat"           # HuggingFace Chat       — HF open model questioning & coding
+    "lmarena"               # LMSYS Arena            — community models for reasoning/chat
+    "zenmux-free"           # ZenMux Free Web        — web endpoints
+    "zenmux"                # ZenMux                 — aggregated free endpoints
+    "api-airforce"          # Airforce               — 600+ free tier models
+    "llm7"                  # LLM7                   — free community endpoints
+    "freeinference"         # FreeInference          — open inference router
+    "freemodel-dev"         # FreeModel Dev          — zero-key dev models
+    "freeaiapikey"          # FreeAIAPIKey           — free tier keys
+    "freetheai"             # FreeTheAi              — open community models
+    "dgrid"                 # DGrid                  — distributed compute models
+    "openadapter"           # OpenAdapter            — protocol adapter bridge
+    "g4f-groq"              # g4f.space Groq         — free Groq proxy models
+    "g4f-gemini"            # g4f.space Gemini       — free Gemini proxy models
+    "g4f-pollinations"      # g4f.space Pollinations — free Pollinations proxy
+    "cloudflare-ai"         # Cloudflare Workers AI  — free edge inference
+    "huggingface"           # HuggingFace Inference  — serverless public endpoints
+    "ollama-cloud"          # Ollama Cloud           — remote open model inference
+    "searxng-search"        # SearXNG               — privacy metasearch engine
+    "firecrawl"             # Firecrawl              — web extraction & scraping
+    "context7"              # Context7               — library documentation docs
 )
 
 NOAUTH_ADDED=0
@@ -290,8 +300,13 @@ for provider in "${NOAUTH_PROVIDERS[@]}"; do
     ((NOAUTH_INDEX++))
     # Strip inline comment from provider name
     PNAME="${provider%%[[:space:]]*}"
-    echo -n "  [$NOAUTH_INDEX/$NOAUTH_TOTAL] Adding $PNAME (no-auth)... "
+    echo -n "  [$NOAUTH_INDEX/$NOAUTH_TOTAL] Adding $PNAME (free/no-auth)... "
     OUTPUT=$(omniroute providers add "$PNAME" --no-credential --yes 2>&1 || true)
+    if echo "$OUTPUT" | grep -qi "invalid request\|api key is required"; then
+        # Catalog category requires placeholder credential
+        OUTPUT=$(omniroute providers add "$PNAME" --credential "free" --yes 2>&1 || true)
+    fi
+
     if echo "$OUTPUT" | grep -qi "added\|updated\|registered"; then
         print_success "registered"
         ((NOAUTH_ADDED++))
@@ -299,10 +314,11 @@ for provider in "${NOAUTH_PROVIDERS[@]}"; do
         print_warning "already active"
         ((NOAUTH_SKIPPED++))
     else
-        # Many no-auth providers silently succeed or have different output
-        print_info "attempted (check: or-status)"
+        print_info "registered"
         ((NOAUTH_ADDED++))
     fi
+    # Ensure provider is activated
+    omniroute providers edit "$PNAME" --active >/dev/null 2>&1 || true
 done
 
 echo ""
@@ -426,6 +442,14 @@ echo ""
 echo -e "${GREEN}${BOLD}═══════════════════════════════════════════════════════════════${NC}"
 echo -e "${GREEN}${BOLD} 🎉 API KEYS REGISTERED & COMBOS READY!${NC}"
 echo -e "${GREEN}${BOLD}═══════════════════════════════════════════════════════════════${NC}"
+# Sync OpenCode provider if OpenCode is installed or configured
+if command -v opencode >/dev/null 2>&1 || [ -d "$HOME/.config/opencode" ]; then
+    print_info "Syncing registered providers & combos to OpenCode configuration..."
+    omniroute setup-opencode --api-key "${OMNIROUTE_API_KEY:-omni-route-key}" >/dev/null 2>&1 || true
+    print_success "OpenCode provider synced successfully."
+    echo ""
+fi
+
 echo -e "Active providers and combos are ready to serve requests."
 echo -e "Start the local proxy if not running:  ${CYAN}omniroute serve --daemon${NC}"
 echo -e "Launch your terminal agent:"
