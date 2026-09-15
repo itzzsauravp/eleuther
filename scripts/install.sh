@@ -213,8 +213,11 @@ case "$SELECTED_AGENT" in
             cat > "$CODEX_CFG" << 'CODEX_CONFIG_EOF'
 # ~/.codex/config.toml
 # OmniRoute integration for Codex CLI — managed by Eleuther installer
-model          = "auto/coding"
-model_provider = "omniroute"
+model                          = "auto/coding"
+model_provider                 = "omniroute"
+model_context_window           = 128000
+model_auto_compact_token_limit = 108800
+tool_output_token_limit        = 16384
 
 [model_providers.omniroute]
 name     = "OmniRoute"
@@ -327,6 +330,7 @@ STORAGE_ENCRYPTION_KEY=$ENC_KEY
 STORAGE_ENCRYPTION_KEY_VERSION=v1
 JWT_SECRET=$JWT_SEC
 API_KEY_SECRET=$API_SEC
+SELECTED_AGENT=$SELECTED_AGENT
 
 # Dashboard / Admin Password
 # Default is CHANGEME — uncomment and set your own password to secure the dashboard
@@ -369,6 +373,17 @@ else
     fi
     if ! grep -q "PORT=" "$OMNI_ENV" 2>/dev/null; then
         echo "PORT=20128" >> "$OMNI_ENV"
+    fi
+    if ! grep -q "SELECTED_AGENT=" "$OMNI_ENV" 2>/dev/null; then
+        echo "SELECTED_AGENT=$SELECTED_AGENT" >> "$OMNI_ENV"
+    else
+        python3 -c "
+import os
+p = os.path.expanduser('~/.omniroute/.env')
+with open(p, 'r') as f: lines = f.readlines()
+new_lines = [l if not l.startswith('SELECTED_AGENT=') else 'SELECTED_AGENT=$SELECTED_AGENT\n' for l in lines]
+with open(p, 'w') as f: f.writelines(new_lines)
+" 2>/dev/null || true
     fi
 
     chmod 600 "$OMNI_ENV" 2>/dev/null || true

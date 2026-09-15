@@ -32,10 +32,26 @@ if [ -n "$BUNDLE_FILE" ] && [ -f "$BUNDLE_FILE" ]; then
     print_success "Installed OpenCode rules: .opencode/rules/omniroute-rules.md"
 fi
 
-# Configure OpenCode provider in opencode.json if OmniRoute is running
-if command -v omniroute >/dev/null 2>&1 && omniroute health >/dev/null 2>&1; then
+# Check active agent from ~/.omniroute/.env
+ACTIVE_AGENT=""
+if [ -f "$HOME/.omniroute/.env" ]; then
+    ACTIVE_AGENT=$(grep "^SELECTED_AGENT=" "$HOME/.omniroute/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+fi
+
+# Configure OpenCode provider in opencode.json only if OpenCode is the selected agent and OmniRoute is running
+if [ "$ACTIVE_AGENT" = "opencode" ] && command -v omniroute >/dev/null 2>&1 && omniroute health >/dev/null 2>&1; then
     omniroute setup-opencode --api-key "${OMNIROUTE_API_KEY:-omni-route-key}" >/dev/null 2>&1 || true
-    print_success "Synced OmniRoute provider with OpenCode"
+    python3 -c "
+import json, os
+p = os.path.expanduser('~/.config/opencode/opencode.json')
+if os.path.exists(p):
+    with open(p, 'r') as f:
+        d = json.load(f)
+    d['model'] = 'omniroute/auto/coding'
+    with open(p, 'w') as f:
+        json.dump(d, f, indent=2)
+" >/dev/null 2>&1 || true
+    print_success "Synced OmniRoute provider with OpenCode (default: omniroute/auto/coding)"
 fi
 
 print_info "OpenCode configured for role: ${ROLE:-default}"

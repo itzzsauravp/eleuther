@@ -448,11 +448,27 @@ echo ""
 echo -e "${GREEN}${BOLD}═══════════════════════════════════════════════════════════════${NC}"
 echo -e "${GREEN}${BOLD} 🎉 API KEYS REGISTERED & COMBOS READY!${NC}"
 echo -e "${GREEN}${BOLD}═══════════════════════════════════════════════════════════════${NC}"
-# Sync OpenCode provider if OpenCode is installed or configured
-if command -v opencode >/dev/null 2>&1 || [ -d "$HOME/.config/opencode" ]; then
+# Check active agent from ~/.omniroute/.env
+ACTIVE_AGENT=""
+if [ -f "$HOME/.omniroute/.env" ]; then
+    ACTIVE_AGENT=$(grep "^SELECTED_AGENT=" "$HOME/.omniroute/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+fi
+
+# Sync OpenCode provider ONLY if OpenCode is selected as the coding agent of choice
+if [ "$ACTIVE_AGENT" = "opencode" ] && (command -v opencode >/dev/null 2>&1 || [ -d "$HOME/.config/opencode" ]); then
     print_info "Syncing registered providers & combos to OpenCode configuration..."
     omniroute setup-opencode --api-key "${OMNIROUTE_API_KEY:-omni-route-key}" >/dev/null 2>&1 || true
-    print_success "OpenCode provider synced successfully."
+    python3 -c "
+import json, os
+p = os.path.expanduser('~/.config/opencode/opencode.json')
+if os.path.exists(p):
+    with open(p, 'r') as f:
+        d = json.load(f)
+    d['model'] = 'omniroute/auto/coding'
+    with open(p, 'w') as f:
+        json.dump(d, f, indent=2)
+" >/dev/null 2>&1 || true
+    print_success "OpenCode provider synced successfully (default: omniroute/auto/coding)."
     echo ""
 fi
 
